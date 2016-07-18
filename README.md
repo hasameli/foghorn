@@ -12,6 +12,8 @@ This README is for the foghorn project.
 * Summary of set up
 * Configuration
 * Dependencies
+foghorn is dependent on python and scapy
+
 * Database configuration
 * How to run tests
 * Deployment instructions
@@ -24,4 +26,4 @@ This README is for the foghorn project.
 
 ### Who do I talk to? ###
 
-* foghorn@hasameli.com 
+* foghorn@hasameli.com
