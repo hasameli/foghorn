@@ -24,4 +24,4 @@ This README is for the foghorn project.
 
 ### Who do I talk to? ###
 
-* foghorn@hasameli.com (TODO: implement that email)
+* foghorn@hasameli.com 
