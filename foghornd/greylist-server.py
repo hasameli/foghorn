@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from greylists import greyList
+from GreylistEntry import GreylistEntry
 from scapy.all import *
 import sys, os, logging, time
 from datetime import datetime,timedelta
