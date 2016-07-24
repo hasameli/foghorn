@@ -1,9 +1,9 @@
 from datetime import datetime
 
-class GreylistEntry:
+class GreylistEntry(object):
     """This class defines greylist entries"""
 
-    def __init__(self, dnsField, firstSeen = datetime.now(), lastSeen = datetime.now()):
+    def __init__(self, dnsField = None, firstSeen = datetime.now(), lastSeen = datetime.now()):
         self._dnsField = dnsField
         self._firstSeen = firstSeen
         self._lastSeen = lastSeen
@@ -15,7 +15,7 @@ class GreylistEntry:
     @dnsField.setter
     def dnsField(self, value):
         #TODO: this needs logic to define acceptable DNS names
-        if (len(value) <= 255):
+        if len(value) <= 255:
             self._dnsField = value
             return True
         else:
