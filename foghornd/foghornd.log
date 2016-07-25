@@ -1,0 +1,9 @@
+logging.Formatter('2016-07-24 18:27:00,493    DEBUG Rejected/notseen by greylist workstation1.example.com')
+logging.Formatter('2016-07-24 18:28:29,024    DEBUG Rejected/notseen by greylist workstation1.example.com')
+logging.Formatter('2016-07-24 18:28:51,277    DEBUG Rejected/notseen by greylist workstation1.example.com')
+logging.Formatter('2016-07-24 18:29:23,489    DEBUG Rejected/notseen by greylist workstation1.example.com')
+logging.Formatter('2016-07-24 18:29:24,961    DEBUG Rejected/greyout by greylist workstation1.example.com')
+logging.Formatter('2016-07-24 18:29:26,441    DEBUG Rejected/greyout by greylist workstation1.example.com')
+logging.Formatter('2016-07-24 18:29:27,417    DEBUG Rejected/greyout by greylist workstation1.example.com')
+2016-07-24 18:29:51,137    DEBUG Rejected/notseen by greylist workstation1.example.com
+2016-07-24 18:29:52,330    DEBUG Rejected/greyout by greylist workstation1.example.com
