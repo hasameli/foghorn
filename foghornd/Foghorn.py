@@ -9,6 +9,7 @@ class Foghorn(object):
 
   def __init__(self, settings):
     self.settings = settings
+    self._peer_address = None
     self.logging = logging.getLogger('foghornd')
     self.whitelist = set(self.loadList(self.settings.WhitelistFile))
     self.blacklist = set(self.loadList(self.settings.BlacklistFile))
@@ -18,16 +19,23 @@ class Foghorn(object):
       entry = GreylistEntry(n[0], n[1], n[2])
       self.greylist[n[0]] = entry
 
+  @property
+  def peer_address(self):
+    return self._peer_address
+
+  @peer_address.setter
+  def peer_address(self, value):
+    self._peer_address = value
 
   def listCheck(self, query):
     if query.type == dns.A:
       key = query.name.name
       if key in self.whitelist:
-        self.logging.debug('Allowed by whitelist %s' % key)
+        self.logging.debug('Allowed by whitelist %s ref-by %s' % (key, self.peer_address))
         return True
       if key in self.blacklist:
         # Key is in blacklist
-        self.logging.debug('Rejected by blacklist %s' % key)
+        self.logging.debug('Rejected by blacklist %s ref-by %s' % (key, self.peer_address))
         return False
       if self.greylist.has_key(key):
         # Key exists in greylist
@@ -37,19 +45,19 @@ class Foghorn(object):
           # Is the entry in the greyout period?
           if (curtime - self.settings.BlackOut <= entry.lastSeen):
             # Is the entry in the blackout period?
-            self.logging.debug('Allowed by greylist %s' % key)
+            self.logging.debug('Allowed by greylist %s ref-by %s' % (key, self.peer_address))
             return True
           else:
-            self.logging.debug('Rejected/timeout by greylist' % key)
+            self.logging.debug('Rejected/timeout by greylist %s ref-by %s' % (key, self.peer_address))
             entry.firstSeen()
             entry.lastSeen()
             return False
         else:
-          self.logging.debug('Rejected/greyout by greylist %s' % key)
+          self.logging.debug('Rejected/greyout by greylist %s ref-by %s' % (key, self.peer_address))
           return False
       else:
         # Entry not found in any list, so add it
-        self.logging.debug('Rejected/notseen by greylist %s' % key)
+        self.logging.debug('Rejected/notseen by greylist %s ref-by %s' % (key, self.peer_address))
         entry = GreylistEntry(key)
         self.greylist[key] = entry
         return False
@@ -64,6 +72,10 @@ class Foghorn(object):
     authority = []
     additional = []
     return answers, authority, additional
+
+  def dataReceived(self, data):
+    from pprint import pprint
+    pprint (vars(data))
 
   def query(self, query, timeout=None):
     """
