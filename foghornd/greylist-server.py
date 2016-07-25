@@ -1,51 +1,13 @@
 #!/usr/bin/env python
 
-from GreylistEntry import GreylistEntry
 from scapy.all import *
 import sys, os, logging, time
-from datetime import datetime,timedelta
-
-#"""TODO: change from hardcoded values to config file"""
-DNSServerIP = "192.168.1.1" #"""Sever providing DNS resolution"""
-GreyIP = "192.168.5.1" #"""Local IP to listen on"""
-DNSPort = 53 #"""Local port number to listen on"""
-Sinkhole = "127.0.0.1" #"""Sinkhole IP for black/greylisting"""
-
-GreyOut = timedelta(hours=24) #"""Time from firstseen to first allowed"""
-BlackOut = timedelta(hours=180) #"""Time from lastseen after which it is no longer allowed"""
-
-WhitelistFile = "/etc/greydns/whitelist"
-BlacklistFile = "/etc/greydns/blacklist"
-GreylistFile = "/etc/greydns/greylist"
-
-blacklist = set()
-whitelist = set()
-greylist = {}
 
 logging.basicConfig(format = '%(asctime)s %(levelname)8s %(message)s', filename = '/var/log/greylist.log', filemode='a')
 
 #""" Stolen cavalierly from thepacketgeek's scapy/dns script """
 filter = "udp port 53 and ip dst " + GreyIP + " and not ip src " + GreyIP
 
-def loadGreyList(file):
-    f = open(file, mode='r', bufsize=-1)
-    for line in f:
-        createListEntry(line.split(','))
-    f.close()
-    return True
-def loadList(file, list):
-    f = open(file, mode='r', bufsize=-1)
-    for line in f:
-        listd(line)
-    f.close()
-    return True    
-def writeGreyList(file, greylist):
-    f = open(file, mode='w', bufsize=-1)
-    items = greylist.values()
-    for line in items:
-        f.write(",".join(line.getDnsField, line.getFirstSeen, line.getLastSeen) + "\n")
-    f.close()
-    return True
 def DNS_Responder(GreyIP):
     def forwardDNS(orig_pkt):
         response = sr1(IP(dst=DNSServerIP)/UDP(sport=orig_pkt[UDP].sport)/\
@@ -54,12 +16,14 @@ def DNS_Responder(GreyIP):
         respPkt[DNS] = response[DNS]
         send(respPkt,verbose=0)
         return respPkt.summary()
+
     def spoof(pkt, key):
         spfResp = IP(dst=pkt[IP].src)\
         /UDP(dport=pkt[UDP].sport, sport=53)\
         /DNS(id=pkt[DNS].id,ancount=1,an=DNSRR(rrname=pkt[DNSQR].qname,rdata=localIP)\
         /DNSRR(rrname=key,rdata=Sinkhole))
         return send(spfResp,verbost=0)
+
     def getResponse(pkt):
         if (DNS in pkt and pkt[DNS].opcode == 0L and pkt[DNS].ancount == 0 and pkt[IP].src != GreyIP):
             key = pkt['DNS Question Record'].qname
@@ -98,9 +62,7 @@ def DNS_Responder(GreyIP):
             return False
 
 def main():
-    loadList(WhitelistFile, whitelist)
-    loadList(BlacklistFile, blacklist)
-    loadGreyList(GreylistFile)
+    fm = Foghorn()
     refresh = datetime.now()
     while 1:
         sniff(filter=filter,prn=DNS_Responder(GreyIP))
