@@ -1,12 +1,17 @@
 import logging
 from datetime import datetime,timedelta
-from FoghornSettings import FoghornSettings
-from twisted.internet import reactor, defer
-from twisted.names import client, dns, error, server
-from GreylistEntry import GreylistEntry
 import dateutil.parser
 
+from twisted.internet import defer
+from twisted.names import dns, error
+
+from FoghornSettings import FoghornSettings
+from GreylistEntry import GreylistEntry
+
 class Foghorn(object):
+  """
+  This manages lists of greylist entries and handles the list checks.
+  """
 
   def __init__(self, settings):
     self.settings = settings
@@ -23,14 +28,18 @@ class Foghorn(object):
           dateutil.parser.parse(elements[2])
           )
       self.greylist[elements[0]] = entry
-    print self.greylist
 
   def saveState(self):
-    print self.greylist
+    """
+    Called as the program is shutting down, put shut down tasks here.
+    """
     self.writeList(self.settings.GreylistFile, self.greylist)
 
   @property
   def peer_address(self):
+    """
+    peer_address is injected in here for logging
+    """
     return self._peer_address
 
   @peer_address.setter
@@ -38,6 +47,10 @@ class Foghorn(object):
     self._peer_address = value
 
   def listCheck(self, query):
+    """
+    Handles the rules regarding what resolves by checking whether the record
+    requested is in our lists. Order is important.
+    """
     if query.type == dns.A:
       key = query.name.name
       if key in self.whitelist:
@@ -74,6 +87,9 @@ class Foghorn(object):
     return False
 
   def buildResponse(self, query):
+    """
+    Builds our Sinkholed response to return when disallowing a response.
+    """
     name = query.name.name
     answer = dns.RRHeader(
         name=name,
@@ -82,10 +98,6 @@ class Foghorn(object):
     authority = []
     additional = []
     return answers, authority, additional
-
-  def dataReceived(self, data):
-    from pprint import pprint
-    pprint (vars(data))
 
   def query(self, query, timeout=None):
     """

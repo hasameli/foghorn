@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 
-import sys, os, logging, time
-from datetime import datetime
+import logging, socket
 from twisted.internet import reactor
 from twisted.names import client, dns, server
-import socket
 from twisted.internet.address import IPv4Address
 
 from FoghornSettings import FoghornSettings
@@ -60,7 +58,6 @@ class Main(object):
 
     reactor.run()
     self.foghorn.saveState()
-
 
 if __name__=='__main__':
   foghornd = Main()
