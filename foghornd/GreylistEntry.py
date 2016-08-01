@@ -37,6 +37,6 @@ class GreylistEntry(object):
     def setLastSeen(self, value = datetime.now()):
         self._lastSeen = value
 
-    def __str__(self):
+    def __repr__(self):
         return "%s, %s, %s" % (self._dnsField, self._firstSeen, self._lastSeen)
 

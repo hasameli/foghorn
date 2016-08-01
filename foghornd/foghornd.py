@@ -59,6 +59,8 @@ class Main(object):
     reactor.listenTCP(self.settings.DNSPort, factory)
 
     reactor.run()
+    self.foghorn.saveState()
+
 
 if __name__=='__main__':
   foghornd = Main()
