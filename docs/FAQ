@@ -32,6 +32,18 @@ Most business users only visit a relatively small number of domains to do their 
 
 Because that doesn't account for the cases where the attacker has taken over someone's inactive website and used it for a phishing endpoint.
 
+* Won't this mess up fast-flux DNS like Amazon and other people use?
+
+No - we're greylisting by the domain name, not the IP that the domain 
+resolves to. Fast-flux DNS, provided that the domain name associated 
+with it is in the whitelist or in the allowed window of the greylist, 
+will work as per usual.
+
 * I want some help setting this up. Do you have any consultants or something?
 
 Email < foghorn at hasameli.com > and we'll make arrangements.
+
+* Why don't you have $FEATURE?
+
+We haven't written it yet - this is a very rough POC as yet. If you want 
+to contribute, we'd be happy to take suggestions or pull requests!
