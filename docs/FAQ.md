@@ -1,4 +1,4 @@
-FAQ
+# FAQ
 
 * Why do I need to do all that complicated network stuff? Can't I just set my workstations to point to foghorn and be happy?
 
