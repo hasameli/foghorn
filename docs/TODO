@@ -1,9 +1,0 @@
-TODO:
-
-* Properly daemonize foghornd
-* Reload/restart method to update lists
-* Baselining mode - designate a time for all traffic to pass through and be resolved to initially populate greylist
-* Account for AAAA/IPv6
-* Implement API to foghornd to allow for front ends, etc.
-* Develop fail2ban scripts for IPS-like capabilities
-* Develop installer script
