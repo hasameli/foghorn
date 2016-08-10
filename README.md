@@ -14,6 +14,13 @@ Configuration details can be found in [docs/foghorn-whitepaper.md](https://githu
 you will need to configure your networks to be compatible with certain 
 prerequisites before foghorn will be effective
 
+There are four configuration files: 
+  * `greydns/blacklist` - a UTF-8 encoded list of blacklisted domains, one per line.
+  * `greydns/whitelist` - a UTF-8 encoded list of whitelisted domains, one per line.
+  * `greydns/greylist` - a UTF-8 encoded file for greylisted entities, one per line,
+listed as a comma-separated list of DNS, firstseen, and lastseen times.
+
+
 ### Dependencies
 foghorn is dependent on python and twisted
 
