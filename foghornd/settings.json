@@ -1,0 +1,10 @@
+{
+    "blackout": 180, 
+    "dns_port": 10053, 
+    "dns_server_ip": "192.168.1.1", 
+    "file": "foghornd.log", 
+    "grey_ip": "192.168.5.1", 
+    "greyout": 24, 
+    "refresh": 5, 
+    "sinkhole": "127.0.0.1"
+}
