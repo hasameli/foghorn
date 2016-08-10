@@ -36,12 +36,19 @@ After baselining, the workstations that you desire to protect should be
 configured to use the foghorn server as their DNS resolver, and any ACLs 
 adjusted accordingly. 
 
+## FAQ
+
+[Available here](https://github.com/hasameli/foghorn/blob/master/docs/FAQ.md)
 
 ## Contribution guidelines
 
 * Writing tests
 * Code review
 * Other guidelines
+
+## License
+
+[MIT](https://github.com/hasameli/foghorn/blob/master/docs/LICENSING)
 
 ## Who do I talk to?
 
