@@ -119,4 +119,41 @@ Rejected/greyout by greylist: This domain has been resolved to a locally control
 
 Rejected/notseen by greylist: As per Rejected/greyout, but indicating the first instance of seeing this domain.
 
+## Configuration
 
+The `settings.json` file holds the configuration information for 
+foghorn. 
+
+The settings are as follows:
+
+`blackout` - This is the time after which greylisted entries are no 
+longer valid, expressed in hours - 180 hours = 7 days.
+
+`dns_port` - This is the port on which foghorn listens. Change this to 
+53 when you decide to put it inline.
+
+`dns_server_ip` - This is the resolver that you are using to manage DNS 
+for your network. If you're running AD, then this will generally point 
+to your AD server. Make sure that this, and only this, server has the 
+capability to request DNS outside the network. 
+
+NOTE: At this time, foghorn only supports single DNS resolvers.
+
+`file` - This is the file that foghorn logs to. Make sure that the 
+foghorn process has the ability to write to that location.
+
+`grey_ip` - This is the IP that foghorn listens on.
+
+`greyout` - This value indicates the initial greyout period (the period 
+before a previously unseen domain becomes valid). It's expressed in 
+hours, and defaults to 24 hours.
+
+`refresh` - This value governs how often the greylist is written to 
+disk. It is expressed in minutes; the default is every 5 minutes.
+
+`sinkhole` - This value indicates what address a blacked-out or 
+greyed-out domain will be resolved to. It defaults to 127.0.0.1 
+(localhost); if you want to resolve it to a server that will provide 
+useful information to the user, replace this value with the IP of that 
+server and ensure that the webserver instance is configured to accept 
+any domain requested.
