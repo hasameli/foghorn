@@ -1,3 +1,5 @@
+""" GreylistEntry -- the structure of a list entry """
+
 from datetime import datetime
 
 class GreylistEntry(object):
@@ -10,6 +12,7 @@ class GreylistEntry(object):
 
     @property
     def dnsField(self):
+        """get dnsField"""
         return self._dnsField
 
     @dnsField.setter
@@ -23,6 +26,7 @@ class GreylistEntry(object):
 
     @property
     def firstSeen(self):
+        """ get firstSeen """
         return self._firstSeen
 
     @firstSeen.setter
@@ -31,12 +35,12 @@ class GreylistEntry(object):
 
     @property
     def lastSeen(self):
+        """ get lastSeen """
         return self._lastSeen
 
     @lastSeen.setter
-    def setLastSeen(self, value = datetime.now()):
+    def setLastSeen(self, value=datetime.now()):
         self._lastSeen = value
 
     def __repr__(self):
-        return "%s, %s, %s" % (self._dnsField, self._firstSeen, self._lastSeen)
-
+        return "%s, %s, %s", self._dnsField, self._firstSeen, self._lastSeen
