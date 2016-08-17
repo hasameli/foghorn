@@ -3,7 +3,7 @@ from datetime import datetime
 class GreylistEntry(object):
     """This class defines greylist entries"""
 
-    def __init__(self, dnsField = None, firstSeen = datetime.now(), lastSeen = datetime.now()):
+    def __init__(self, dnsField=None, firstSeen=datetime.now(), lastSeen=datetime.now()):
         self._dnsField = dnsField
         self._firstSeen = firstSeen
         self._lastSeen = lastSeen
@@ -26,7 +26,7 @@ class GreylistEntry(object):
         return self._firstSeen
 
     @firstSeen.setter
-    def firstSeen(self, value = datetime.now()):
+    def firstSeen(self, value=datetime.now()):
         self._firstSeen = value
 
     @property
