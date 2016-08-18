@@ -64,9 +64,10 @@ class Main(object):
         )
         protocol = dns.DNSDatagramProtocol(controller=factory)
 
+        # Pylint can't seem to find these methods.
+        # pylint: disable=E1101
         reactor.listenUDP(self.settings.dns_port, protocol)
         reactor.listenTCP(self.settings.dns_port, factory)
-
         reactor.run()
         self.foghorn.save_state()
 
