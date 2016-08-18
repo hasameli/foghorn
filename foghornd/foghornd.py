@@ -64,8 +64,8 @@ class Main(object):
         )
         protocol = dns.DNSDatagramProtocol(controller=factory)
 
-        reactor.listenUDP(self.settings.DNSPort, protocol)
-        reactor.listenTCP(self.settings.DNSPort, factory)
+        reactor.listenUDP(self.settings.dns_port, protocol)
+        reactor.listenTCP(self.settings.dns_port, factory)
 
         reactor.run()
         self.foghorn.save_state()

@@ -20,10 +20,10 @@ class Foghorn(object):
         self.settings = settings
         self._peer_address = None
         self.logging = logging.getLogger('foghornd')
-        self.whitelist = set(load_list(self.settings.WhitelistFile))
-        self.blacklist = set(load_list(self.settings.BlacklistFile))
+        self.whitelist = set(load_list(self.settings.whitelist_file))
+        self.blacklist = set(load_list(self.settings.blacklist_file))
         self.greylist = {}
-        for item in load_list(self.settings.GreylistFile):
+        for item in load_list(self.settings.greylist_file):
             elements = [n.strip() for n in item.split(',')]
             entry = GreylistEntry(
                 elements[0],
@@ -67,9 +67,9 @@ class Foghorn(object):
                 # Key exists in greylist
                 curtime = datetime.now()
                 entry = self.greylist[key]
-                if (curtime - self.settings.GreyOut) >= entry.firstSeen:
+                if (curtime - self.settings.grey_out) >= entry.firstSeen:
                     # Is the entry in the greyout period?
-                    if curtime - self.settings.BlackOut <= entry.lastSeen:
+                    if curtime - self.settings.blackout <= entry.lastSeen:
                         # Is the entry in the blackout period?
                         self.logging.debug('Allowed by greylist %s ref-by %s',
                                            key, self.peer_address)
@@ -93,21 +93,24 @@ class Foghorn(object):
             return False
     def build_response(self, query):
         """
-        Builds our Sinkholed response to return when disallowing a response.
+        Builds our sinkholed response to return when disallowing a response.
         """
         name = query.name.name
         answer = dns.RRHeader(name=name,
-                              payload=dns.Record_A(address=b'%s' % (self.settings.Sinkhole)))
+                              payload=dns.Record_A(address=b'%s' % (self.settings.sinkhole)))
         answers = [answer]
         authority = []
         additional = []
         return answers, authority, additional
 
-    def query(self, query):
+    def query(self, query, timeout=0):
         """
         Either return our fake response, or let it on through to the next resolver
         in the chain
         """
+        # Disable the warning that timeout is unused. We have to
+        # accept the argument.
+        # pylint: disable=W0613
         if not self.list_check(query):
             return defer.succeed(self.build_response(query))
         else:
@@ -127,7 +130,7 @@ def write_list(filename, items):
         with open(filename, mode='w') as write_file:
             if greylist_entries:
                 for item in items.itervalues():
-                    write_file.write("%s\n" % item)
+                    write_file.write(format("%s\n", item))
                     return True
     except IOError as io_error:
         print "%s" % io_error

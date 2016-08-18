@@ -13,9 +13,9 @@ class FoghornSettings(object):
     # PATHS
     home = os.path.dirname(__file__)
     path = os.path.join(home, "settings.json")
-    WhitelistFile = os.path.join(home, "greydns", "whitelist")
-    BlacklistFile = os.path.join(home, "greydns", "blacklist")
-    GreylistFile = os.path.join(home, "greydns", "greylist")
+    whitelist_file = os.path.join(home, "greydns", "whitelist")
+    blacklist_file = os.path.join(home, "greydns", "blacklist")
+    greylist_file = os.path.join(home, "greydns", "greylist")
 
     def __init__(self):
         super(FoghornSettings, self).__init__()
