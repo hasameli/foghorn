@@ -1,11 +1,10 @@
 import logging
-from datetime import datetime,timedelta
+from datetime import datetime
 import dateutil.parser
 
 from twisted.internet import defer
 from twisted.names import dns, error
 
-from FoghornSettings import FoghornSettings
 from GreylistEntry import GreylistEntry
 
 class Foghorn(object):

@@ -18,7 +18,7 @@ class FoghornDNSServerFactory(server.DNSServerFactory):
     elif protocol.transport.socket.type == socket.SOCK_DGRAM:
       self.peer_address = IPv4Address('UDP', *address)
     else:
-      logger.warn("Unexpected socket type %r" % protocol.transport.socket.type)
+      self.logger.warn("Unexpected socket type %r" % protocol.transport.socket.type)
 
     # Make peer_address available to resolvers that support that attribute
     for resolver in self.resolver.resolvers:
@@ -58,7 +58,3 @@ class Main(object):
 
     reactor.run()
     self.foghorn.saveState()
-
-if __name__=='__main__':
-  foghornd = Main()
-  foghornd.run()
