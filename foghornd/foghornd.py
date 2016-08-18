@@ -41,6 +41,10 @@ class Main(object):
     def __init__(self):
         self.settings = FoghornSettings()
         self.foghorn = Foghorn(self.settings)
+        self.init_logging()
+
+    def init_logging(self):
+        """ Initalize logging objects """
         logger = logging.getLogger('foghornd')
         logger.setLevel(logging.DEBUG)
         formatter = logging.Formatter("%(asctime)s %(levelname)8s %(message)s")
@@ -60,12 +64,13 @@ class Main(object):
         )
         protocol = dns.DNSDatagramProtocol(controller=factory)
 
-        reactor.listenUDP(self.settings.DNSPort, protocol)
-        reactor.listenTCP(self.settings.DNSPort, factory)
-
+        # Pylint can't seem to find these methods.
+        # pylint: disable=E1101
+        reactor.listenUDP(self.settings.dns_port, protocol)
+        reactor.listenTCP(self.settings.dns_port, factory)
         reactor.run()
-        self.foghorn.saveState()
+        self.foghorn.save_state()
 
 if __name__ == '__main__':
-    foghornd = Main()
-    foghornd.run()
+    FOGHORN = Main()
+    FOGHORN.run()

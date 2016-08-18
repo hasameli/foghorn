@@ -5,42 +5,42 @@ from datetime import datetime
 class GreylistEntry(object):
     """This class defines greylist entries"""
 
-    def __init__(self, dnsField=None, firstSeen=datetime.now(), lastSeen=datetime.now()):
-        self._dnsField = dnsField
-        self._firstSeen = firstSeen
-        self._lastSeen = lastSeen
+    def __init__(self, dns_field=None, first_seen=datetime.now(), last_seen=datetime.now()):
+        self._dns_field = dns_field
+        self._first_seen = first_seen
+        self._last_seen = last_seen
 
     @property
-    def dnsField(self):
-        """get dnsField"""
-        return self._dnsField
+    def dns_field(self):
+        """get dns_field"""
+        return self._dns_field
 
-    @dnsField.setter
-    def dnsField(self, value):
+    @dns_field.setter
+    def dns_field(self, value):
         #TODO: this needs logic to define acceptable DNS names
         if len(value) <= 255:
-            self._dnsField = value
+            self._dns_field = value
             return True
         else:
             return False
 
     @property
-    def firstSeen(self):
-        """ get firstSeen """
-        return self._firstSeen
+    def first_seen(self):
+        """ get first_seen """
+        return self._first_seen
 
-    @firstSeen.setter
-    def firstSeen(self, value=datetime.now()):
-        self._firstSeen = value
+    @first_seen.setter
+    def first_seen(self, value=datetime.now()):
+        self._first_seen = value
 
     @property
-    def lastSeen(self):
-        """ get lastSeen """
-        return self._lastSeen
+    def last_seen(self):
+        """ get last_seen """
+        return self._last_seen
 
-    @lastSeen.setter
-    def setLastSeen(self, value=datetime.now()):
-        self._lastSeen = value
+    @last_seen.setter
+    def set_last_seen(self, value=datetime.now()):
+        self._last_seen = value
 
     def __repr__(self):
-        return "%s, %s, %s", self._dnsField, self._firstSeen, self._lastSeen
+        return "%s, %s, %s", self._dns_field, self._first_seen, self._last_seen
