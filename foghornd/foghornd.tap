@@ -1,9 +1,18 @@
-#!/usr/bin/env python
+# You can run this .tac file directly with:
+#    twistd -ny service.tac
 
-""" The foghorn daemon """
+"""
+This is an example .tac file which starts a webserver on port 8080 and
+serves files from the current working directory.
+
+The important part of this, the part that makes it a .tac file, is
+the final root-level section, which sets up the object called 'application'
+which twistd will look for
+"""
 
 import logging
 import socket
+from twisted.application import service, internet
 from twisted.internet import reactor
 from twisted.names import client, dns, server
 from twisted.internet.address import IPv4Address
@@ -71,6 +80,31 @@ class Main(object):
         reactor.run()
         self.foghorn.save_state()
 
+
+def foghord_service():
+    """
+    Return a service suitable for creating an application object.
+    """
+    # create a resource to serve static files
+    FOGHORN = Main()
+
+    factory = FoghornDNSServerFactory(
+        clients=[FOGHORN.foghorn, client.Resolver(resolv='/etc/resolv.conf')]
+    )
+    protocol = dns.DNSDatagramProtocol(controller=factory)
+
+    return internet.UDPServer(FOGHORN.settings.dns_port, protocol)
+
+
 if __name__ == '__main__':
     FOGHORN = Main()
     FOGHORN.run()
+else:
+    # this is the core part of any tac file, the creation of the root-level
+    # application object
+    application = service.Application("foghorn")
+
+    # attach the service to its parent application
+    service = foghord_service()
+
+    service.setServiceParent(application)

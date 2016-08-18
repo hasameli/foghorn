@@ -36,7 +36,7 @@ class Foghorn(object):
         """
         Called as the program is shutting down, put shut down tasks here.
         """
-        write_list(self.settings.GreylistFile, self.greylist)
+        write_list(self.settings.greylist_file, self.greylist)
 
     @property
     def peer_address(self):
