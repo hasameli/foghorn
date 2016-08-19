@@ -51,9 +51,9 @@ adjusted accordingly.
 
 ## Contribution guidelines
 
-* Writing tests
-* Code review
-* Other guidelines
+* We would like contributions to be in line with the PEP8 standards.
+* We would like if you run pylint before sending contributions. It makes things a little tidier.
+* If adding a new feature, please check if it's listed in the issues and reference it in your PR
 
 ## License
 
