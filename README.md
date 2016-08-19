@@ -2,12 +2,25 @@
 
 This README is for the foghorn project.
 
-## What is this repository for?
+**Table of Contents**
+
+- [Description](#description)
+- [Setup](#setup)
+  - [Configuration](#configuration)
+  - [Dependencies](#dependencies)
+  - [Installation](#installation)
+  - [Deployment Instructions](#deployment-instructions)
+- [FAQ](#faq)
+- [Contributor Guidelines](#contributor-guidelines)
+- [License](#license)
+- [Contact](#contact)
+
+## Description
 
 * foghorn is a configurable DNS proxy to allow for black-, white-, and greylisting of DNS resources.
 * Version 0.1
 
-## How do I get set up?
+## Setup
 
 ### Configuration
 Configuration details can be found in [docs/foghorn-whitepaper.md](https://github.com/hasameli/foghorn/blob/master/docs/foghorn-whitepaper.md) -
@@ -41,7 +54,7 @@ python setup.py install --user
 ```
 
 
-### Deployment instructions
+### Deployment Instructions
 See the diagram in the
 [bsideslv-2016 presentation](https://github.com/hasameli/foghorn/raw/master/docs/bsides-preso.pdf)
 in the docs folder for an overview; see also the
@@ -64,7 +77,7 @@ adjusted accordingly.
 
 [Available here](https://github.com/hasameli/foghorn/blob/master/docs/FAQ.md)
 
-## Contribution guidelines
+## Contributor Guidelines
 
 * Writing tests
 * Code review
@@ -74,7 +87,7 @@ adjusted accordingly.
 
 [MIT](https://github.com/hasameli/foghorn/blob/master/docs/LICENSING)
 
-## Who do I talk to?
+## Contact
 
 * foghorn@hasameli.com
 * On Twitter, talk to @munin
