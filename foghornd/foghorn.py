@@ -1,6 +1,7 @@
 """FogHorn - DNS Graylisting"""
 
 import logging
+import signal
 from datetime import datetime
 import dateutil.parser
 
@@ -20,6 +21,10 @@ class Foghorn(object):
         self.whitelist = set(load_list(self.settings.whitelist_file))
         self.blacklist = set(load_list(self.settings.blacklist_file))
         self.greylist = {}
+
+        self.baseline = False
+        signal.signal(signal.SIGUSR1, self.toggle_baseline)
+
         for item in load_list(self.settings.greylist_file):
             elements = [n.strip() for n in item.split(',')]
             entry = GreylistEntry(
@@ -28,6 +33,13 @@ class Foghorn(object):
                 dateutil.parser.parse(elements[2])
             )
             self.greylist[elements[0]] = entry
+
+    def toggle_baseline(self, signal_recvd, frame):
+        """Toggle baselining - accepting all hosts to build greylist"""
+        # We must accept these args from signal, even if unused
+        # pylint: disable=W0613
+        self.logging.debug('toggling baseline from %r to %r', self.baseline, not self.baseline)
+        self.baseline = not self.baseline
 
     def save_state(self):
         """Called as the program is shutting down, put shut down tasks here."""
