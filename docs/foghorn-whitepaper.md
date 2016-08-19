@@ -81,7 +81,7 @@ Third, once the baselining period is over, the workstations that require protect
 
 Fourth, the greylister's whitelist should be populated with the local domain (to facilitate proper lookups) and any known-good domains for which immediate resolution is required; likewise, the blacklist should be populated with any known-bad domains that you wish to block. 
 
-Fifth, some baselining of your existing DNS traffic will be needed in order to populate the greylist. At this time, there is no provision within the application to do so (though this functionality is being planned); accordingly, copying existing DNS traffic from your network to the inbound network connection of the greylister for at least 24 hours will be required. This can be accomplished via a SPAN or mirror port, or by a temporary iptables or similar rule in the case of a UNIX-type resolver tee-ing the appropriate traffic to the greylister.
+Fifth, some baselining of your existing DNS traffic will be needed in order to populate the greylist. Baselining mode can be toggled by sending SIGUSR1 to the greylisting process.
 
 ## Limitations
 
