@@ -66,7 +66,7 @@ class Foghorn(object):
     def check_blacklist(self, query):
         """Check the blacklist for this query"""
         key = query.name.name
-        if key in self.whitelist:
+        if key in self.blacklist:
             self.logging.debug('Rejected by blacklist %s ref-by %s', key, self.peer_address)
             return True
         return False
