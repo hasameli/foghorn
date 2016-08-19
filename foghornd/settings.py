@@ -93,7 +93,7 @@ class FoghornSettings(object):
         return self.data.get("sinkhole6", "::1")
 
     @sinkhole6.setter
-    def sinkhole(self, value):
+    def sinkhole6(self, value):
         self.data["sinkhole6"] = value
 
     @property

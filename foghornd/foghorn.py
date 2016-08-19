@@ -134,9 +134,14 @@ class Foghorn(object):
     def build_response(self, query):
         """Build sinkholed response when disallowing a response."""
         name = query.name.name
-        answer = dns.RRHeader(name=name,
-                              payload=dns.Record_A(address=b'%s' %
-                                                   (self.settings.sinkhole)))
+
+        if query.type == dns.AAAA:
+            answer = dns.RRHeader(name=name,
+                                  type=dns.AAAA,
+                                  payload=dns.Record_AAAA(address=b'%s' % self.settings.sinkhole6))
+        else:
+            answer = dns.RRHeader(name=name,
+                                  payload=dns.Record_A(address=b'%s' % (self.settings.sinkhole)))
         answers = [answer]
         authority = []
         additional = []
