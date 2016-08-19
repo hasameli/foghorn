@@ -1,9 +1,11 @@
+"""FogHorn - DNS Graylisting"""
+
 __all__ = [
     'Foghorn',
     'FoghornSettings',
     'GreylistEntry',
 ]
 
-from Foghorn import Foghorn
-from FoghornSettings import FoghornSettings
-from GreylistEntry import GreylistEntry
+from foghorn import Foghorn
+from greylist_entry import GreylistEntry
+from settings import FoghornSettings

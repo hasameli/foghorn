@@ -78,7 +78,7 @@ class FoghornSettings(object):
 
     @property
     def sinkhole(self):
-        """sinkhole IP for black/greylisting"""
+        """Sinkhole IP for black/greylisting"""
 
         return self.data.get("sinkhole", "127.0.0.1")
 
