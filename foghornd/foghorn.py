@@ -20,26 +20,33 @@ class Foghorn(object):
         self.logging = logging.getLogger('foghornd')
         self.baseline = False
         signal.signal(signal.SIGUSR1, self.toggle_baseline)
+        signal.signal(signal.SIGHUP, self.load_lists)
         self.load_lists()
 
-    def load_lists(self):
+    def load_lists(self, signal_recvd=None, frame=None):
+        """Load the white|grey|black lists"""
+        # Signal handling
+        # pylint: ignore=W0613
         self.whitelist = set(load_list(self.settings.whitelist_file))
         self.blacklist = set(load_list(self.settings.blacklist_file))
         self.greylist = {}
 
         for item in load_list(self.settings.greylist_file):
             elements = [n.strip() for n in item.split(',')]
-            entry = GreylistEntry(
-                elements[0],
-                dateutil.parser.parse(elements[1]),
-                dateutil.parser.parse(elements[2])
-            )
-            self.greylist[elements[0]] = entry
+            if len(elements) == 3:
+                entry = GreylistEntry(
+                    elements[0],
+                    dateutil.parser.parse(elements[1]),
+                    dateutil.parser.parse(elements[2])
+                )
+                self.greylist[elements[0]] = entry
+            else:
+                self.logging.debug('Error processing line: %s', item)
 
-    def toggle_baseline(self, signal_recvd, frame):
+    def toggle_baseline(self, signal_recvd=None, frame=None):
         """Toggle baselining - accepting all hosts to build greylist"""
-        # We must accept these args from signal, even if unused
-        # pylint: disable=W0613
+        # Signal handling
+        # pylint: ignore=W0613
         self.logging.debug('toggling baseline from %r to %r', self.baseline, not self.baseline)
         self.baseline = not self.baseline
 
