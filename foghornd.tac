@@ -2,12 +2,8 @@
 #    twistd -ny service.tac
 
 """
-This is an example .tac file which starts a webserver on port 8080 and
-serves files from the current working directory.
-
-The important part of this, the part that makes it a .tac file, is
-the final root-level section, which sets up the object called 'application'
-which twistd will look for
+This .tac file starts the foghorn DNS proxying daemon
+according to the settings in foghornd/settings.json
 """
 
 import logging
@@ -99,8 +95,8 @@ if __name__ == '__main__':
     FOGHORN = Main()
     FOGHORN.run()
 else:
-    # this is the core part of any tac file, the creation of the root-level
-    # application object
+    # This is the required part of the .tac file to start
+    # the service as a daemon
     application = service.Application("foghorn")
 
     # attach the service to its parent application

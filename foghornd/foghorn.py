@@ -1,4 +1,4 @@
-"""FogHorn - DNS Graylisting"""
+"""FogHorn - DNS Greylisting"""
 
 import logging
 import signal
