@@ -157,3 +157,21 @@ greyed-out domain will be resolved to. It defaults to 127.0.0.1
 useful information to the user, replace this value with the IP of that 
 server and ensure that the webserver instance is configured to accept 
 any domain requested.
+
+## Runtime considerations
+
+Starting the service can be done via the foghorn.py script, or manually with 
+
+`twistd -y foghornd.tap`
+
+To run it in the foreground requires the invocation
+
+`twistd -ny foghornd.tap`
+
+The twistd invocation will emit a .pid file which will provide the process ID to which signals can be sent.
+
+Sending SIGUSR1 to this process will toggle 'baselining' mode - every request will be accepted as valid into the greylist.
+
+Sending SIGHUP will purge the in-memory lists and reload all of them from disk. 
+
+
