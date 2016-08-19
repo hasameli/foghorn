@@ -169,7 +169,8 @@ def write_list(filename, items):
         with open(filename, mode='w') as write_file:
             if greylist_entries:
                 for item in items.itervalues():
-                    write_file.write(format("%s\n", item))
+                    write_file.write(format("%s,%s,%s\n" %
+                                            (item.dns_field, item.first_seen, item.last_seen)))
                     return True
     except IOError as io_error:
         print "%s" % io_error
