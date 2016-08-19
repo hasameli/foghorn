@@ -1,6 +1,7 @@
 """FogHorn - DNS Graylisting"""
 
 import logging
+import signal
 from datetime import datetime
 import dateutil.parser
 
@@ -20,6 +21,10 @@ class Foghorn(object):
         self.whitelist = set(load_list(self.settings.whitelist_file))
         self.blacklist = set(load_list(self.settings.blacklist_file))
         self.greylist = {}
+
+        self.baseline = False
+        signal.signal(signal.SIGUSR1, self.toggle_baseline)
+
         for item in load_list(self.settings.greylist_file):
             elements = [n.strip() for n in item.split(',')]
             entry = GreylistEntry(
@@ -28,6 +33,13 @@ class Foghorn(object):
                 dateutil.parser.parse(elements[2])
             )
             self.greylist[elements[0]] = entry
+
+    def toggle_baseline(self, signal_recvd, frame):
+        """Toggle baselining - accepting all hosts to build greylist"""
+        # We must accept these args from signal, even if unused
+        # pylint: disable=W0613
+        self.logging.debug('toggling baseline from %r to %r', self.baseline, not self.baseline)
+        self.baseline = not self.baseline
 
     def save_state(self):
         """Called as the program is shutting down, put shut down tasks here."""
@@ -74,13 +86,13 @@ class Foghorn(object):
     def check_greylist(self, query):
         """Check the greylist for this query"""
         key = query.name.name
+        curtime = datetime.now()
         if key in self.greylist:
             # Key exists in greylist
-            curtime = datetime.now()
             entry = self.greylist[key]
-            if (curtime - self.settings.grey_out) >= entry.firstSeen:
+            if (curtime - self.settings.grey_out) >= entry.first_seen:
                 # Is the entry in the greyout period?
-                if curtime - self.settings.blackout <= entry.lastSeen:
+                if curtime - self.settings.blackout <= entry.last_seen:
                     # Is the entry in the blackout period?
                     self.logging.debug('Allowed by greylist %s ref-by %s',
                                        key, self.peer_address)
@@ -88,8 +100,8 @@ class Foghorn(object):
                 else:
                     self.logging.debug('Rejected/timeout by greylist %s ref-by %s',
                                        key, self.peer_address)
-                    entry.firstSeen()
-                    entry.lastSeen()
+                    entry.first_seen()
+                    entry.last_seen()
                     return False
             else:
                 self.logging.debug('Rejected/greyout by greylist %s ref-by %s',
@@ -99,16 +111,20 @@ class Foghorn(object):
             # Entry not found in any list, so add it
             self.logging.debug('Rejected/notseen by greylist %s ref-by %s',
                                key, self.peer_address)
-            entry = GreylistEntry(key)
-            self.greylist[key] = entry
-            return False
-
+            if self.baseline:
+                self.greylist[key] = GreylistEntry(key,
+                                                   curtime - self.settings.grey_out)
+                return True
+            else:
+                self.greylist[key] = GreylistEntry(key)
+                return False
 
     def build_response(self, query):
         """Build sinkholed response when disallowing a response."""
         name = query.name.name
         answer = dns.RRHeader(name=name,
-                              payload=dns.Record_A(address=b'%s' % (self.settings.sinkhole)))
+                              payload=dns.Record_A(address=b'%s' %
+                                                   (self.settings.sinkhole)))
         answers = [answer]
         authority = []
         additional = []
