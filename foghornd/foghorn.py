@@ -18,26 +18,35 @@ class Foghorn(object):
         self.settings = settings
         self._peer_address = None
         self.logging = logging.getLogger('foghornd')
+        self.baseline = False
+        signal.signal(signal.SIGUSR1, self.toggle_baseline)
+        signal.signal(signal.SIGHUP, self.load_lists)
+        self.load_lists()
+
+    def load_lists(self, signal_recvd=None, frame=None):
+        """Load the white|grey|black lists"""
+        # Signal handling
+        # pylint: ignore=W0613
         self.whitelist = set(load_list(self.settings.whitelist_file))
         self.blacklist = set(load_list(self.settings.blacklist_file))
         self.greylist = {}
 
-        self.baseline = False
-        signal.signal(signal.SIGUSR1, self.toggle_baseline)
-
         for item in load_list(self.settings.greylist_file):
             elements = [n.strip() for n in item.split(',')]
-            entry = GreylistEntry(
-                elements[0],
-                dateutil.parser.parse(elements[1]),
-                dateutil.parser.parse(elements[2])
-            )
-            self.greylist[elements[0]] = entry
+            if len(elements) == 3:
+                entry = GreylistEntry(
+                    elements[0],
+                    dateutil.parser.parse(elements[1]),
+                    dateutil.parser.parse(elements[2])
+                )
+                self.greylist[elements[0]] = entry
+            else:
+                self.logging.debug('Error processing line: %s', item)
 
-    def toggle_baseline(self, signal_recvd, frame):
+    def toggle_baseline(self, signal_recvd=None, frame=None):
         """Toggle baselining - accepting all hosts to build greylist"""
-        # We must accept these args from signal, even if unused
-        # pylint: disable=W0613
+        # Signal handling
+        # pylint: ignore=W0613
         self.logging.debug('toggling baseline from %r to %r', self.baseline, not self.baseline)
         self.baseline = not self.baseline
 
@@ -59,7 +68,7 @@ class Foghorn(object):
         Handle rules regarding what resolves by checking whether
         the record requested is in our lists. Order is important.
         """
-        if query.type == dns.A:
+        if query.type in [dns.A, dns.AAAA]:
             if self.check_whitelist(query):
                 return True
             elif self.check_blacklist(query):
@@ -102,6 +111,7 @@ class Foghorn(object):
                                        key, self.peer_address)
                     entry.first_seen()
                     entry.last_seen()
+                    self.save_state()
                     return False
             else:
                 self.logging.debug('Rejected/greyout by greylist %s ref-by %s',
@@ -114,17 +124,24 @@ class Foghorn(object):
             if self.baseline:
                 self.greylist[key] = GreylistEntry(key,
                                                    curtime - self.settings.grey_out)
+                self.save_state()
                 return True
             else:
                 self.greylist[key] = GreylistEntry(key)
+                self.save_state()
                 return False
 
     def build_response(self, query):
         """Build sinkholed response when disallowing a response."""
         name = query.name.name
-        answer = dns.RRHeader(name=name,
-                              payload=dns.Record_A(address=b'%s' %
-                                                   (self.settings.sinkhole)))
+
+        if query.type == dns.AAAA:
+            answer = dns.RRHeader(name=name,
+                                  type=dns.AAAA,
+                                  payload=dns.Record_AAAA(address=b'%s' % self.settings.sinkhole6))
+        else:
+            answer = dns.RRHeader(name=name,
+                                  payload=dns.Record_A(address=b'%s' % (self.settings.sinkhole)))
         answers = [answer]
         authority = []
         additional = []
@@ -157,7 +174,8 @@ def write_list(filename, items):
         with open(filename, mode='w') as write_file:
             if greylist_entries:
                 for item in items.itervalues():
-                    write_file.write(format("%s\n", item))
+                    write_file.write(format("%s,%s,%s\n" %
+                                            (item.dns_field, item.first_seen, item.last_seen)))
                     return True
     except IOError as io_error:
         print "%s" % io_error
