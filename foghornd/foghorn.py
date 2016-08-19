@@ -111,6 +111,7 @@ class Foghorn(object):
                                        key, self.peer_address)
                     entry.first_seen()
                     entry.last_seen()
+                    self.save_state()
                     return False
             else:
                 self.logging.debug('Rejected/greyout by greylist %s ref-by %s',
@@ -123,9 +124,11 @@ class Foghorn(object):
             if self.baseline:
                 self.greylist[key] = GreylistEntry(key,
                                                    curtime - self.settings.grey_out)
+                self.save_state()
                 return True
             else:
                 self.greylist[key] = GreylistEntry(key)
+                self.save_state()
                 return False
 
     def build_response(self, query):
