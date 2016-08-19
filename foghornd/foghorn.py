@@ -7,7 +7,7 @@ import dateutil.parser
 from twisted.internet import defer
 from twisted.names import dns, error
 
-from greylist_entry import GreylistEntry
+from foghornd.greylist_entry import GreylistEntry
 
 
 class Foghorn(object):
@@ -48,35 +48,53 @@ class Foghorn(object):
         the record requested is in our lists. Order is important.
         """
         if query.type == dns.A:
-            key = query.name.name
-            if key in self.whitelist:
-                self.logging.debug('Allowed by whitelist %s ref-by %s', key, self.peer_address)
+            if self.check_whitelist(query):
                 return True
-            if key in self.blacklist:
-                # Key is in blacklist
-                self.logging.debug('Rejected by blacklist %s ref-by %s', key, self.peer_address)
+            elif self.check_blacklist(query):
                 return False
-            if self.greylist.has_key(key):
-                # Key exists in greylist
-                curtime = datetime.now()
-                entry = self.greylist[key]
-                if (curtime - self.settings.grey_out) >= entry.firstSeen:
-                    # Is the entry in the greyout period?
-                    if curtime - self.settings.blackout <= entry.lastSeen:
-                        # Is the entry in the blackout period?
-                        self.logging.debug('Allowed by greylist %s ref-by %s',
-                                           key, self.peer_address)
-                        return True
-                    else:
-                        self.logging.debug('Rejected/timeout by greylist %s ref-by %s',
-                                           key, self.peer_address)
-                        entry.firstSeen()
-                        entry.lastSeen()
-                        return False
-                else:
-                    self.logging.debug('Rejected/greyout by greylist %s ref-by %s',
+            else:
+                return self.check_greylist(query)
+
+    def check_whitelist(self, query):
+        """Check the whitelist for this query"""
+        key = query.name.name
+        if key in self.whitelist:
+            self.logging.debug('Allowed by whitelist %s ref-by %s', key, self.peer_address)
+            return True
+        return False
+
+    def check_blacklist(self, query):
+        """Check the blacklist for this query"""
+        key = query.name.name
+        if key in self.whitelist:
+            self.logging.debug('Rejected by blacklist %s ref-by %s', key, self.peer_address)
+            return True
+        return False
+
+    def check_greylist(self, query):
+        """Check the greylist for this query"""
+        key = query.name.name
+        if key in self.greylist:
+            # Key exists in greylist
+            curtime = datetime.now()
+            entry = self.greylist[key]
+            if (curtime - self.settings.grey_out) >= entry.firstSeen:
+                # Is the entry in the greyout period?
+                if curtime - self.settings.blackout <= entry.lastSeen:
+                    # Is the entry in the blackout period?
+                    self.logging.debug('Allowed by greylist %s ref-by %s',
                                        key, self.peer_address)
+                    return True
+                else:
+                    self.logging.debug('Rejected/timeout by greylist %s ref-by %s',
+                                       key, self.peer_address)
+                    entry.firstSeen()
+                    entry.lastSeen()
                     return False
+            else:
+                self.logging.debug('Rejected/greyout by greylist %s ref-by %s',
+                                   key, self.peer_address)
+                return False
         else:
             # Entry not found in any list, so add it
             self.logging.debug('Rejected/notseen by greylist %s ref-by %s',
@@ -84,6 +102,8 @@ class Foghorn(object):
             entry = GreylistEntry(key)
             self.greylist[key] = entry
             return False
+
+
     def build_response(self, query):
         """Build sinkholed response when disallowing a response."""
         name = query.name.name
@@ -137,4 +157,3 @@ def load_list(filename):
     except IOError as io_error:
         print "%s" % io_error
         return []
-
