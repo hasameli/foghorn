@@ -13,9 +13,9 @@ class FoghornSettings(object):
     # PATHS
     home = os.path.dirname(__file__)
     path = os.path.join(home, "settings.json")
-    WhitelistFile = os.path.join(home, "greydns", "whitelist")
-    BlacklistFile = os.path.join(home, "greydns", "blacklist")
-    GreylistFile = os.path.join(home, "greydns", "greylist")
+    whitelist_file = os.path.join(home, "greydns", "whitelist")
+    blacklist_file = os.path.join(home, "greydns", "blacklist")
+    greylist_file = os.path.join(home, "greydns", "greylist")
 
     def __init__(self):
         super(FoghornSettings, self).__init__()
@@ -27,20 +27,21 @@ class FoghornSettings(object):
     def load(self):
         '''Load settings'''
 
-        with open(self.path) as f:
-            self.data.update(json.load(f))
+        with open(self.path) as settings_file:
+            self.data.update(json.load(settings_file))
 
     def save(self):
         '''Save settings'''
 
-        with open(self.path, "w") as f:
-            json.dump(self.data, f, indent=4, sort_keys=True)
+        with open(self.path, "w") as settings_file:
+            json.dump(self.data, settings_file, indent=4, sort_keys=True)
 
     # PROPERTIES
     # ----------
 
     @property
     def logfile(self):
+        """Return current logfile"""
         return self.data.get("logfile", "foghornd.log")
 
     @logfile.setter
@@ -48,71 +49,74 @@ class FoghornSettings(object):
         self.data["logfile"] = value
 
     @property
-    def DNSServerIP(self):
+    def dns_server_ip(self):
+        """Return current dns server ip"""
         return self.data.get("dns_server_ip", "192.168.1.1")
 
-    @DNSServerIP.setter
-    def DNSServerIP(self, value):
+    @dns_server_ip.setter
+    def dns_server_ip(self, value):
         self.data["dns_server_ip"] = value
 
     @property
-    def GreyIP(self):
+    def grey_ip(self):
+        """Return current grey ip"""
         return self.data.get("grey_ip", "192.168.5.1")
 
-    @GreyIP.setter
-    def GreyIP(self, value):
+    @grey_ip.setter
+    def grey_ip(self, value):
         self.data["grey_ip"] = value
 
     @property
-    def DNSPort(self):
+    def dns_port(self):
         """Local port number to listen on"""
 
         return self.data.get("dns_port", 10053)
 
-    @DNSPort.setter
-    def DNSPort(self, value):
+    @dns_port.setter
+    def dns_port(self, value):
         self.data["dns_port"] = value
 
     @property
-    def Sinkhole(self):
-        """Sinkhole IP for black/greylisting"""
+    def sinkhole(self):
+        """sinkhole IP for black/greylisting"""
 
         return self.data.get("sinkhole", "127.0.0.1")
 
-    @Sinkhole.setter
-    def Sinkhole(self, value):
+    @sinkhole.setter
+    def sinkhole(self, value):
         self.data["sinkhole"] = value
 
     @property
-    def GreyOut(self):
+    def grey_out(self):
         """Time from firstseen to first allowed"""
 
         return timedelta(hours=self.data.get("greyout", 24))
 
-    @GreyOut.setter
-    def GreyOut(self, value):
+    @grey_out.setter
+    def grey_out(self, value):
         """Convert deltatime to hours"""
 
         self.data["greyout"] = value.total_seconds() / 3600.
 
     @property
-    def BlackOut(self):
+    def blackout(self):
         """Time from lastseen after which it is no longer allowed"""
 
         return timedelta(hours=self.data.get("blackout", 180))
 
-    @BlackOut.setter
-    def BlackOut(self, value):
+    @blackout.setter
+    def blackout(self, value):
         """Convert deltatime to hours"""
 
         self.data["blackout"] = value.total_seconds() / 3600.
 
     @property
-    def RefreshPeriod(self):
+    def refresh_period(self):
+        """Return current refresh_period"""
         return timedelta(minutes=self.data.get("refresh", 5))
 
-    @RefreshPeriod.setter
-    def RefreshPeriod(self, value):
+    @refresh_period.setter
+    def refresh_period(self, value):
         """Convert deltatime to minutes"""
 
         self.data["refresh"] = value.total_seconds() / 60.
