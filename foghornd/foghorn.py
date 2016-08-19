@@ -74,13 +74,13 @@ class Foghorn(object):
     def check_greylist(self, query):
         """Check the greylist for this query"""
         key = query.name.name
+        curtime = datetime.now()
         if key in self.greylist:
             # Key exists in greylist
-            curtime = datetime.now()
             entry = self.greylist[key]
-            if (curtime - self.settings.grey_out) >= entry.firstSeen:
+            if (curtime - self.settings.grey_out) >= entry.first_seen:
                 # Is the entry in the greyout period?
-                if curtime - self.settings.blackout <= entry.lastSeen:
+                if curtime - self.settings.blackout <= entry.last_seen:
                     # Is the entry in the blackout period?
                     self.logging.debug('Allowed by greylist %s ref-by %s',
                                        key, self.peer_address)
@@ -88,8 +88,8 @@ class Foghorn(object):
                 else:
                     self.logging.debug('Rejected/timeout by greylist %s ref-by %s',
                                        key, self.peer_address)
-                    entry.firstSeen()
-                    entry.lastSeen()
+                    entry.first_seen()
+                    entry.last_seen()
                     return False
             else:
                 self.logging.debug('Rejected/greyout by greylist %s ref-by %s',
@@ -99,16 +99,20 @@ class Foghorn(object):
             # Entry not found in any list, so add it
             self.logging.debug('Rejected/notseen by greylist %s ref-by %s',
                                key, self.peer_address)
-            entry = GreylistEntry(key)
-            self.greylist[key] = entry
-            return False
-
+            if self.baseline:
+                self.greylist[key] = GreylistEntry(key,
+                                                   curtime - self.settings.grey_out)
+                return True
+            else:
+                self.greylist[key] = GreylistEntry(key)
+                return False
 
     def build_response(self, query):
         """Build sinkholed response when disallowing a response."""
         name = query.name.name
         answer = dns.RRHeader(name=name,
-                              payload=dns.Record_A(address=b'%s' % (self.settings.sinkhole)))
+                              payload=dns.Record_A(address=b'%s' %
+                                                   (self.settings.sinkhole)))
         answers = [answer]
         authority = []
         additional = []
