@@ -7,7 +7,7 @@ import dateutil.parser
 from twisted.internet import defer
 from twisted.names import dns, error
 
-from greylist_entry import GreylistEntry
+from foghornd.greylist_entry import GreylistEntry
 
 
 class Foghorn(object):
