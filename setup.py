@@ -69,7 +69,7 @@ setup(name='Foghorn',
           'greydns/*',
           'settings.json'
       ]},
-      scripts=['foghorn.py'],
+      scripts=['foghorn.py', 'foghornd.tap'],
       include_package_data=True,
       install_requires=DEPENDENCIES,
       setup_requires=DEPENDENCIES,

@@ -7,8 +7,8 @@
     :license: MIT, see docs/LICENSING for more details.
 '''
 
-from foghornd import Main
+import subprocess
 
 if __name__ == '__main__':
-    foghornd = Main()
-    foghornd.run()
+    proc = subprocess.Popen(["twistd", "-ny", "foghornd.tap"], shell=False)
+    proc.wait()

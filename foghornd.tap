@@ -17,8 +17,7 @@ from twisted.internet import reactor
 from twisted.names import client, dns, server
 from twisted.internet.address import IPv4Address
 
-from FoghornSettings import FoghornSettings
-from Foghorn import Foghorn
+from foghornd import Foghorn, FoghornSettings
 
 
 class FoghornDNSServerFactory(server.DNSServerFactory):
