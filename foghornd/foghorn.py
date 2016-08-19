@@ -18,12 +18,14 @@ class Foghorn(object):
         self.settings = settings
         self._peer_address = None
         self.logging = logging.getLogger('foghornd')
+        self.baseline = False
+        signal.signal(signal.SIGUSR1, self.toggle_baseline)
+        self.load_lists()
+
+    def load_lists(self):
         self.whitelist = set(load_list(self.settings.whitelist_file))
         self.blacklist = set(load_list(self.settings.blacklist_file))
         self.greylist = {}
-
-        self.baseline = False
-        signal.signal(signal.SIGUSR1, self.toggle_baseline)
 
         for item in load_list(self.settings.greylist_file):
             elements = [n.strip() for n in item.split(',')]
