@@ -87,6 +87,16 @@ class FoghornSettings(object):
         self.data["sinkhole"] = value
 
     @property
+    def sinkhole6(self):
+        """Sinkhole IP for black/greylisting"""
+
+        return self.data.get("sinkhole6", "::1")
+
+    @sinkhole6.setter
+    def sinkhole(self, value):
+        self.data["sinkhole6"] = value
+
+    @property
     def grey_out(self):
         """Time from firstseen to first allowed"""
 

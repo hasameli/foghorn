@@ -68,7 +68,7 @@ class Foghorn(object):
         Handle rules regarding what resolves by checking whether
         the record requested is in our lists. Order is important.
         """
-        if query.type == dns.A:
+        if query.type in [dns.A, dns.AAAA]:
             if self.check_whitelist(query):
                 return True
             elif self.check_blacklist(query):
