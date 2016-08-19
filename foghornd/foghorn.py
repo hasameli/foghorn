@@ -1,6 +1,5 @@
-"""
-FogHorn - DNS Graylisting
-"""
+"""FogHorn - DNS Graylisting"""
+
 import logging
 from datetime import datetime
 import dateutil.parser
@@ -8,13 +7,11 @@ import dateutil.parser
 from twisted.internet import defer
 from twisted.names import dns, error
 
-from GreylistEntry import GreylistEntry
+from greylist_entry import GreylistEntry
 
 
 class Foghorn(object):
-    """
-    This manages lists of greylist entries and handles the list checks.
-    """
+    """Manage lists of greylist entries and handles the list checks."""
 
     def __init__(self, settings):
         self.settings = settings
@@ -33,16 +30,12 @@ class Foghorn(object):
             self.greylist[elements[0]] = entry
 
     def save_state(self):
-        """
-        Called as the program is shutting down, put shut down tasks here.
-        """
+        """Called as the program is shutting down, put shut down tasks here."""
         write_list(self.settings.greylist_file, self.greylist)
 
     @property
     def peer_address(self):
-        """
-        peer_address is injected in here for logging
-        """
+        """peer_address is injected in here for logging"""
         return self._peer_address
 
     @peer_address.setter
@@ -51,8 +44,8 @@ class Foghorn(object):
 
     def list_check(self, query):
         """
-        Handles the rules regarding what resolves by checking whether the record
-        requested is in our lists. Order is important.
+        Handle rules regarding what resolves by checking whether
+        the record requested is in our lists. Order is important.
         """
         if query.type == dns.A:
             key = query.name.name
@@ -92,9 +85,7 @@ class Foghorn(object):
             self.greylist[key] = entry
             return False
     def build_response(self, query):
-        """
-        Builds our sinkholed response to return when disallowing a response.
-        """
+        """Build sinkholed response when disallowing a response."""
         name = query.name.name
         answer = dns.RRHeader(name=name,
                               payload=dns.Record_A(address=b'%s' % (self.settings.sinkhole)))
@@ -118,7 +109,7 @@ class Foghorn(object):
 
 
 def write_list(filename, items):
-    """ Write out [gray|whit|black] blists """
+    """Write out [gray|whit|black] blists"""
     greylist_entries = False
     if len(items.keys()) > 0 and isinstance(items.itervalues().next(), GreylistEntry):
         greylist_entries = True
@@ -137,9 +128,7 @@ def write_list(filename, items):
         return False
 
 def load_list(filename):
-    """
-    Load the specified list
-    """
+    """Load the specified list."""
     lines = []
     try:
         with open(filename, mode='r') as read_file:

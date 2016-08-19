@@ -1,6 +1,7 @@
-""" GreylistEntry -- the structure of a list entry """
+"""GreylistEntry -- the structure of a list entry"""
 
 from datetime import datetime
+
 
 class GreylistEntry(object):
     """This class defines greylist entries"""
@@ -12,7 +13,7 @@ class GreylistEntry(object):
 
     @property
     def dns_field(self):
-        """get dns_field"""
+        """Get dns_field"""
         return self._dns_field
 
     @dns_field.setter
@@ -26,7 +27,7 @@ class GreylistEntry(object):
 
     @property
     def first_seen(self):
-        """ get first_seen """
+        """Get first_seen"""
         return self._first_seen
 
     @first_seen.setter
@@ -35,7 +36,7 @@ class GreylistEntry(object):
 
     @property
     def last_seen(self):
-        """ get last_seen """
+        """Get last_seen"""
         return self._last_seen
 
     @last_seen.setter
