@@ -1,16 +1,16 @@
 import dateutil.parser
 import logging
 
+from foghornd.plugins.loader import LoaderBase
 from foghornd.greylist_entry import GreylistEntry
 from datetime import datetime
 
 
-class simple:
+class simple(LoaderBase):
     def __init__(self, settings):
         self.settings = settings
         self.logging = logging.getLogger('foghornd')
         print "Initing simple"
-        print self
 
     def load_lists(self, signal_recvd=None, frame=None):
         """Load the white|grey|black lists"""
