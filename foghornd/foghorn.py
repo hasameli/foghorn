@@ -9,6 +9,7 @@ from twisted.internet import defer
 from twisted.names import dns, error
 
 from foghornd.greylist_entry import GreylistEntry
+from foghornd.plugin_manager import PluginManager
 
 
 class Foghorn(object):
