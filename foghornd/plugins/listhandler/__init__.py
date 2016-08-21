@@ -4,7 +4,7 @@ import logging
 from abc import ABCMeta, abstractmethod
 
 
-class LoaderBase():
+class ListHandlerBase():
     """Interface"""
     __metaclass__ = ABCMeta
 

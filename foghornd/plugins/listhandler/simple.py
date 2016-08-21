@@ -1,12 +1,12 @@
+from foghornd.greylist_entry import GreylistEntry
+from datetime import datetime
+from foghornd.plugins.listhandler import ListHandlerBase
+
 import dateutil.parser
 import logging
 
-from foghornd.plugins.loader import LoaderBase
-from foghornd.greylist_entry import GreylistEntry
-from datetime import datetime
 
-
-class simple(LoaderBase):
+class simple(ListHandlerBase):
     def __init__(self, settings):
         self.settings = settings
         self.logging = logging.getLogger('foghornd')

@@ -19,14 +19,14 @@ class Foghorn(object):
         self.logging = logging.getLogger('foghornd')
         signal.signal(signal.SIGUSR1, self.toggle_baseline)
         signal.signal(signal.SIGHUP, self.reload)
-        self.loader_manager = PluginManager("foghornd.plugins.loader", "./foghornd/plugins/loader/")
-        self.loader = self.loader_manager.new("simple", self.settings)
-        self.loader.load_lists()
+        self.listhandler_manager = PluginManager("foghornd.plugins.listhandler", "./foghornd/plugins/listhandler/")
+        self.listhandler = self.listhandler_manager.new("simple", self.settings)
+        self.listhandler.load_lists()
 
     # Signal handlers
     def reload(self,  signal_recvd=None, frame=None):
         # pylint: ignore=W0613
-        self.loader.load_lists()
+        self.listhandler.load_lists()
 
     def toggle_baseline(self, signal_recvd=None, frame=None):
         """Toggle baselining - accepting all hosts to build greylist"""
@@ -49,14 +49,14 @@ class Foghorn(object):
         the record requested is in our lists. Order is important.
         """
         if query.type in [dns.A, dns.AAAA]:
-            if self.loader.check_whitelist(query):
+            if self.listhandler.check_whitelist(query):
                 self.logging.debug('Allowed by whitelist %s ref-by %s', key, self.peer_address)
                 return True
-            elif self.loader.check_blacklist(query):
+            elif self.listhandler.check_blacklist(query):
                 self.logging.debug('Rejected by blacklist %s ref-by %s', key, self.peer_address)
                 return False
             else:
-                return self.loader.check_greylist(query,self.baseline, self.peer_address)
+                return self.listhandler.check_greylist(query,self.baseline, self.peer_address)
 
     def build_response(self, query):
         """Build sinkholed response when disallowing a response."""
