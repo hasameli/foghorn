@@ -27,6 +27,8 @@ class PluginManager(object):
         modules = {}
         for infile in glob.glob(path):
             basename = os.path.basename(infile)
+            if basename == "__init__":
+                continue
             plugin_name = basename[:-3]
             plugin_namespace = "%s.%s" % (base, plugin_name)
             plugin = imp.load_source(plugin_namespace, infile)
