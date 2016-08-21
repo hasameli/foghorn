@@ -3,6 +3,8 @@
 import os
 import glob
 import imp
+# import name spaces
+import foghornd.plugins.listhandler
 
 
 class PluginManager(object):
