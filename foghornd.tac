@@ -87,9 +87,13 @@ def foghord_service():
     factory = FoghornDNSServerFactory(
         clients=[foghorn.foghorn, client.Resolver(resolv='/etc/resolv.conf')]
     )
-    protocol = dns.DNSDatagramProtocol(controller=factory)
 
-    return internet.UDPServer(foghorn.settings.dns_port, protocol)
+    udp_protocol = dns.DNSDatagramProtocol(controller=factory)
+    udp_server = internet.UDPServer(foghorn.settings.dns_port, udp_protocol)
+
+    tcp_server = internet.TCPServer(foghorn.settings.dns_port, factory)
+
+    return [udp_server, tcp_server]
 
 
 if __name__ == '__main__':
@@ -101,6 +105,5 @@ else:
     application = service.Application("foghorn")
 
     # attach the service to its parent application
-    service = foghord_service()
-
-    service.setServiceParent(application)
+    for item in foghord_service():
+        item.setServiceParent(application)
