@@ -38,6 +38,7 @@ class FoghornDNSServerFactory(server.DNSServerFactory):
 
         return server.DNSServerFactory.handleQuery(self, message, protocol, address)
 
+
 class Main(object):
     """Load settings and start the server"""
 
