@@ -32,3 +32,7 @@ class ListHandlerBase():
     @abstractmethod
     def check_greylist(self, query, baseline, peer_address):
         """Check the greylist for this query"""
+
+    @abstractmethod
+    def update_greylist(self, entry):
+        """update the greylist with this entry"""

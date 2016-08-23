@@ -6,8 +6,10 @@ import signal
 from twisted.internet import defer
 from twisted.names import dns, error
 
+from foghornd.greylistentry import GreylistEntry
 from foghornd.plugin_manager import PluginManager
 
+from datetime import datetime
 
 class Foghorn(object):
     """Manage lists of greylist entries and handles the list checks."""
@@ -19,12 +21,13 @@ class Foghorn(object):
         self.logging = logging.getLogger('foghornd')
         signal.signal(signal.SIGUSR1, self.toggle_baseline)
         signal.signal(signal.SIGHUP, self.reload)
-        self.listhandler_manager = PluginManager("foghornd.plugins.listhandler", "./foghornd/plugins/listhandler/")
-        self.listhandler = self.listhandler_manager.new("simple", self.settings)
+        self.listhandler_manager = PluginManager("foghornd.plugins.listhandler",
+                                                 "./foghornd/plugins/listhandler/")
+        self.listhandler = self.listhandler_manager.new(self.settings.loader, self.settings)
         self.listhandler.load_lists()
 
     # Signal handlers
-    def reload(self,  signal_recvd=None, frame=None):
+    def reload(self, signal_recvd=None, frame=None):
         # pylint: ignore=W0613
         self.listhandler.load_lists()
 
@@ -48,6 +51,8 @@ class Foghorn(object):
         Handle rules regarding what resolves by checking whether
         the record requested is in our lists. Order is important.
         """
+        key = query.name.name
+        curtime = datetime.now()
         if query.type in [dns.A, dns.AAAA]:
             if self.listhandler.check_whitelist(query):
                 self.logging.debug('Allowed by whitelist %s ref-by %s', key, self.peer_address)
@@ -56,7 +61,37 @@ class Foghorn(object):
                 self.logging.debug('Rejected by blacklist %s ref-by %s', key, self.peer_address)
                 return False
             else:
-                return self.listhandler.check_greylist(query,self.baseline, self.peer_address)
+                entry = self.listhandler.check_greylist(query,self.baseline, self.peer_address)
+                ret_value = False
+                if entry:
+                    entry.last_seen = curtime
+                    if (curtime - self.settings.grey_out) >= entry.first_seen:
+                        # Is the entry in the greyout period?
+                        if curtime - self.settings.blackout <= entry.last_seen:
+                            # Is the entry in the blackout period?
+                            self.logging.debug('Allowed by greylist %s ref-by %s',
+                                               key, self.peer_address)
+                            ret_value = True
+                        else:
+                            self.logging.debug('Rejected/timeout by greylist %s ref-by %s',
+                                               key, self.peer_address)
+                            ret_value = False
+                    else:
+                        self.logging.debug('Rejected/greyout by greylist %s ref-by %s',
+                                           key, self.peer_address)
+                        ret_value = False
+                else:
+                    # Entry not found in any list, so add it
+                    self.logging.debug('Rejected/notseen by greylist %s ref-by %s',
+                                       key, self.peer_address)
+                    if self.baseline:
+                        entry = GreylistEntry(key, curtime - self.settings.grey_out)
+                        ret_value = True
+                    else:
+                        entry = GreylistEntry(key)
+                        ret_value = False
+                self.listhandler.update_greylist(entry)
+                return ret_value
 
     def build_response(self, query):
         """Build sinkholed response when disallowing a response."""
