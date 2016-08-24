@@ -65,21 +65,10 @@ class Foghorn(object):
                 ret_value = False
                 if entry:
                     entry.last_seen = curtime
-                    if (curtime - self.settings.grey_out) >= entry.first_seen:
-                        # Is the entry in the greyout period?
-                        if curtime - self.settings.blackout <= entry.last_seen:
-                            # Is the entry in the blackout period?
-                            self.logging.debug('Allowed by greylist %s ref-by %s',
-                                               key, self.peer_address)
-                            ret_value = True
-                        else:
-                            self.logging.debug('Rejected/timeout by greylist %s ref-by %s',
-                                               key, self.peer_address)
-                            ret_value = False
-                    else:
-                        self.logging.debug('Rejected/greyout by greylist %s ref-by %s',
-                                           key, self.peer_address)
-                        ret_value = False
+                    response = entry.check_greyout(curtime, self.settings)
+                    ret_value = response["ret_value"]
+                    message = response["message"]
+                    self.logging.debug("%s ref-by %s" % (message, self.peer_address))
                 else:
                     # Entry not found in any list, so add it
                     self.logging.debug('Rejected/notseen by greylist %s ref-by %s',
