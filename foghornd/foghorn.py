@@ -22,7 +22,9 @@ class Foghorn(object):
         signal.signal(signal.SIGUSR1, self.toggle_baseline)
         signal.signal(signal.SIGHUP, self.reload)
         self.listhandler_manager = PluginManager("foghornd.plugins.listhandler",
-                                                 "./foghornd/plugins/listhandler/")
+                                                 "./foghornd/plugins/listhandler/",
+                                                 "*.py",
+                                                 "ListHandlerBase")
         self.listhandler = self.listhandler_manager.new(self.settings.loader, self.settings)
         self.listhandler.load_lists()
 
