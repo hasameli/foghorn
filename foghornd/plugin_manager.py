@@ -12,8 +12,8 @@ class PluginManager(object):
     """This class provides a loader for plugins"""
     modules = {}
 
-    def __init__(self, base, path="./plugins/"):
-        self.load_plugins(base, path)
+    def __init__(self, base, path="./plugins/", pattern="*.py", class_type=None): 
+        self.load_plugins(base, path, pattern, class_type)
 
     def new(self, plugin, *args, **kwargs):
         """Create a new plugin type, passing extra args to constructor"""
