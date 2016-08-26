@@ -4,7 +4,8 @@ import os
 import glob
 import imp
 import inspect
-# import name spaces
+# import name spaces to prevent runtime warnings
+# pylint: disable=W0611
 import foghornd.plugins.listhandler
 
 
@@ -12,7 +13,7 @@ class PluginManager(object):
     """This class provides a loader for plugins"""
     modules = {}
 
-    def __init__(self, base, path="./plugins/", pattern="*.py", class_type=None): 
+    def __init__(self, base, path="./plugins/", pattern="*.py", class_type=None):
         self.load_plugins(base, path, pattern, class_type)
 
     def new(self, plugin, *args, **kwargs):
@@ -46,6 +47,7 @@ class PluginManager(object):
 
 
 def inherits_from(child, parent_name):
+    """Check if a class inherits from a parent class"""
     if inspect.isclass(child):
         if parent_name in [c.__name__ for c in inspect.getmro(child)[1:]]:
             return True
