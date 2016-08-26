@@ -31,12 +31,13 @@ class Foghorn(object):
 
     # Signal handlers
     def reload(self, signal_recvd=None, frame=None):
-        # pylint: ignore=W0613
+        """Tell the white/black/greylist handler to reload"""
+        # pylint: disable=W0613
         self.listhandler.load_lists()
 
     def toggle_baseline(self, signal_recvd=None, frame=None):
         """Toggle baselining - accepting all hosts to build greylist"""
-        # pylint: ignore=W0613
+        # pylint: disable=W0613
         self.logging.debug('toggling baseline from %r to %r', self.baseline, not self.baseline)
         self.baseline = not self.baseline
 
@@ -64,14 +65,14 @@ class Foghorn(object):
                 self.logging.debug('Rejected by blacklist %s ref-by %s', key, self.peer_address)
                 return False
             else:
-                entry = self.listhandler.check_greylist(query,self.baseline, self.peer_address)
+                entry = self.listhandler.check_greylist(query, self.baseline, self.peer_address)
                 ret_value = False
                 if entry:
                     entry.last_seen = curtime
                     response = entry.check_greyout(curtime, self.settings)
                     ret_value = response["ret_value"]
                     message = response["message"]
-                    self.logging.debug("%s ref-by %s" % (message, self.peer_address))
+                    self.logging.debug("%s ref-by %s", message, self.peer_address)
                 else:
                     # Entry not found in any list, so add it
                     self.logging.debug('Rejected/notseen by greylist %s ref-by %s',
