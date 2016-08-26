@@ -1,20 +1,28 @@
-from datetime import datetime
+"""Store lists in flat files on to disk and read into memory"""
+
+import logging
+import dateutil.parser
+
 from foghornd.plugins.listhandler import ListHandlerBase
 from foghornd.greylistentry import GreylistEntry
 
-import dateutil.parser
-import logging
 
+class Simple(ListHandlerBase):
+    """Simple ListHandler"""
 
-class simple(ListHandlerBase):
+    whitelist = None
+    blacklist = None
+    greylist = None
+
     def __init__(self, settings):
+        super(Simple, self).__init__(settings)
         self.settings = settings
         self.logging = logging.getLogger('foghornd')
 
     def load_lists(self, signal_recvd=None, frame=None):
         """Load the white|grey|black lists"""
         # Signal handling
-        # pylint: ignore=W0613
+        # pylint: disable=W0613
         self.whitelist = set(load_list(self.settings.whitelist_file))
         self.blacklist = set(load_list(self.settings.blacklist_file))
         self.greylist = {}
