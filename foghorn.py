@@ -10,5 +10,5 @@
 import subprocess
 
 if __name__ == '__main__':
-    proc = subprocess.Popen(["twistd", "-ny", "foghornd.tac"], shell=False)
-    proc.wait()
+    PROC = subprocess.Popen(["twistd", "-ny", "foghornd.tac"], shell=False)
+    PROC.wait()
