@@ -3,13 +3,14 @@
 import logging
 import signal
 
+from datetime import datetime
+
 from twisted.internet import defer
 from twisted.names import dns, error
 
 from foghornd.greylistentry import GreylistEntry
 from foghornd.plugin_manager import PluginManager
 
-from datetime import datetime
 
 class Foghorn(object):
     """Manage lists of greylist entries and handles the list checks."""
