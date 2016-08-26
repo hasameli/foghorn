@@ -8,12 +8,15 @@ from foghornd.plugins.listhandler import ListHandlerBase
 from foghornd.greylistentry import GreylistEntry
 
 
-class foghorn_sqllite(ListHandlerBase):
+class Sqllite(ListHandlerBase):
+    """An sqllite3 backend for foghorn"""
+
     db_file = 'foghorn.sqlite3'
     select_query = 'SELECT host, first_seen, last_seen FROM %s WHERE host=?'
     queries = {}
 
     def __init__(self, settings):
+        super(Sqllite, self).__init__(settings)
         self.settings = settings
         self.logging = logging.getLogger('foghornd')
         self.sql_conn = sqlite3.connect(self.db_file)
@@ -25,6 +28,7 @@ class foghorn_sqllite(ListHandlerBase):
         This function will be called to reload the lists.
         In our case this  does nothing
         """
+        # pylint: disable=W0613
 
     def save_state(self):
         """noop - we have no state to save"""
@@ -73,6 +77,7 @@ class foghorn_sqllite(ListHandlerBase):
         self.sql_conn.commit()
 
     def initdb(self):
+        """Create the databases and configure the queries"""
         definition = """(host TEXT NOT NULL ,
                         first_seen DATETIME NOT NULL,
                         last_seen DATETIME NOT NULL,
