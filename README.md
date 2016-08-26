@@ -33,7 +33,7 @@ There are four configuration files:
   * `greydns/greylist` - a UTF-8 encoded file for greylisted entities, one per line,
 listed as a comma-separated list of DNS, firstseen, and lastseen times.
   * `settings.json` - a json dictionary of configuration variables, lightly documented
-[in FoghornSettings.py](https://github.com/hasameli/foghorn/blob/master/foghornd/FoghornSettings.py)
+[in settings.py](https://github.com/hasameli/foghorn/blob/master/foghornd/settings.py)
 
 
 ### Dependencies

@@ -1,5 +1,3 @@
-"""GreylistEntry -- the structure of a list entry"""
-
 from datetime import datetime
 
 
@@ -40,8 +38,25 @@ class GreylistEntry(object):
         return self._last_seen
 
     @last_seen.setter
-    def set_last_seen(self, value=datetime.now()):
+    def last_seen(self, value=datetime.now()):
         self._last_seen = value
+
+    def check_greyout(self, curtime, settings):
+        message = ""
+        if (curtime - settings.grey_out) >= self.first_seen:
+            # Is the entry in the greyout period?
+            if curtime - settings.blackout <= self.last_seen:
+                # Is the entry in the blackout period?
+                message = "Allowed by greylist %s" % (self.dns_field)
+                ret_value = True
+            else:
+                message = "Rejected/timeout by greylist %s" % (self.dns_field) 
+                ret_value = False
+        else:
+            message = "Rejected/greyout by greylist %s" % (self.dns_field)
+            ret_value = False
+
+        return {"ret_value": ret_value, "message": message}
 
     def __repr__(self):
         return "%s, %s, %s", self._dns_field, self._first_seen, self._last_seen
