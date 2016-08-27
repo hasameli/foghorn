@@ -19,28 +19,28 @@ class Sqlite_subscription(Sqlite):
         In our case this  does nothing
         """
         # pylint: disable=W0613
-        url = "https://www.zackallison.com/foghorn.json"
-        response = requests.get(url)
+        for url in self.settings.loader_settings["subscriptions"]:
+            response = requests.get(url)
 
-        try:
-            items = response.json()
-            cursor = self.sql_conn.cursor()
-            for list_type in ["whitelist", "blacklist"]:
-                query = "DELETE FROM %s WHERE subscription=?" % list_type
-                cursor.execute(query, (url,))
+            try:
+                items = response.json()
+                cursor = self.sql_conn.cursor()
+                for list_type in ["whitelist", "blacklist"]:
+                    query = "DELETE FROM %s WHERE subscription=?" % list_type
+                    cursor.execute(query, (url,))
 
-                query = "INSERT OR IGNORE INTO %s (host) VALUES (?)" % list_type
-                for item in items[list_type]:
-                    cursor.execute(query, (item,))
+                    query = "INSERT OR IGNORE INTO %s (host) VALUES (?)" % list_type
+                    for item in items[list_type]:
+                        cursor.execute(query, (item,))
 
-                self.sql_conn.commit()
-        except sqlite3.Error as e:
-            print "An error occurred:", e.args[0]
-            exit(1)
-        except:
-            print "Unable to load subscription: ", response
-            print sys.exc_info()[0]
-            print response.content
+                    self.sql_conn.commit()
+            except sqlite3.Error as e:
+                print "An error occurred:", e.args[0]
+                exit(1)
+            except:
+                print "Unable to load subscription: ", response
+                print sys.exc_info()[0]
+                print response.content
 
     def initdb(self):
         """Create the databases and configure the queries"""

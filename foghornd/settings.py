@@ -140,3 +140,12 @@ class FoghornSettings(object):
     @loader.setter
     def loader(self, value):
         self.data["loader"] = value
+
+    @property
+    def loader_settings(self):
+        """Return settings for the loader"""
+        return self.data.get("loader_settings", {})
+
+    @loader_settings.setter
+    def loader_settings(self, value):
+        self.data["loader_settings"] = value
