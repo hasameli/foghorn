@@ -48,21 +48,6 @@ class Main(object):
     def __init__(self):
         self.settings = FoghornSettings()
         self.foghorn = Foghorn(self.settings)
-        self.init_logging()
-
-    def init_logging(self):
-        """Initalize logging objects"""
-        logger = logging.getLogger('foghornd')
-        logger.setLevel(logging.DEBUG)
-        formatter = logging.Formatter("%(asctime)s %(levelname)8s %(message)s")
-        log_streamhandler = logging.StreamHandler()
-        log_streamhandler.setLevel(logging.DEBUG)
-        log_streamhandler.setFormatter(formatter)
-        logger.addHandler(log_streamhandler)
-        file_handle = logging.FileHandler(self.settings.logfile)
-        file_handle.setLevel(logging.DEBUG)
-        file_handle.setFormatter(formatter)
-        logger.addHandler(file_handle)
 
     def run(self):
         """Kick off the server"""

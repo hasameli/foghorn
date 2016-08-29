@@ -4,9 +4,10 @@ import os
 import glob
 import imp
 import inspect
-# import name spaces to prevent runtime warnings
+# import plugin name spaces to prevent runtime warnings
 # pylint: disable=W0611
 import foghornd.plugins.listhandler
+import foghornd.plugins.logger
 
 
 class PluginManager(object):
