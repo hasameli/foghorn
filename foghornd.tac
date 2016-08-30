@@ -48,20 +48,9 @@ class Main(object):
     def __init__(self):
         self.settings = FoghornSettings()
         self.foghorn = Foghorn(self.settings)
-
-    def run(self):
-        """Kick off the server"""
-        factory = FoghornDNSServerFactory(
-            clients=[self.foghorn, client.Resolver(resolv='/etc/resolv.conf')]
-        )
-        protocol = dns.DNSDatagramProtocol(controller=factory)
-
-        # Pylint can't seem to find these methods.
-        # pylint: disable=E1101
-        reactor.listenUDP(self.settings.dns_port, protocol)
-        reactor.listenTCP(self.settings.dns_port, factory)
-        reactor.run()
-        self.foghorn.save_state()
+        self.foghornrpc = FoghornXMLRPC()
+        self.foghornrpc.foghorn = self.foghorn
+        self.foghornrpc.allowNone = 1
 
 
 def foghord_service():
@@ -75,20 +64,15 @@ def foghord_service():
 
     udp_protocol = dns.DNSDatagramProtocol(controller=factory)
     udp_server = internet.UDPServer(foghorn.settings.dns_port, udp_protocol)
-
     tcp_server = internet.TCPServer(foghorn.settings.dns_port, factory)
+    xml_server = internet.TCPServer(7080, webserver.Site(foghorn.foghornrpc))
+    return [udp_server, tcp_server, xml_server]
 
-    return [udp_server, tcp_server]
 
+# This is the required part of the .tac file to start
+# the service as a daemon
+application = service.Application("foghorn")
 
-if __name__ == '__main__':
-    FOGHORN = Main()
-    FOGHORN.run()
-else:
-    # This is the required part of the .tac file to start
-    # the service as a daemon
-    application = service.Application("foghorn")
-
-    # attach the service to its parent application
-    for item in foghord_service():
-        item.setServiceParent(application)
+# attach the service to its parent application
+for item in foghord_service():
+    item.setServiceParent(application)
