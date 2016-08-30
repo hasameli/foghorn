@@ -1,5 +1,6 @@
 """PluginManager -- handles the loading of plugins and submodules"""
 
+import sys
 import os
 import glob
 import imp
@@ -36,7 +37,11 @@ class PluginManager(object):
                 continue
             plugin_name = basename[:-3]
             plugin_namespace = "%s.%s" % (base, plugin_name)
-            plugin = imp.load_source(plugin_namespace, infile)
+            if plugin_namespace in sys.modules:
+                # Already loaded
+                plugin = sys.modules[plugin_namespace]
+            else:
+                plugin = imp.load_source(plugin_namespace, infile)
             caller = getattr(plugin, plugin_name, None)
             if caller is None:
                 raise ImportError("Class not found:", plugin_name, plugin)
