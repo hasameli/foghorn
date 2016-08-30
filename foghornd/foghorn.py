@@ -50,7 +50,7 @@ class Foghorn(object):
     def toggle_baseline(self, signal_recvd=None, frame=None):
         """Toggle baselining - accepting all hosts to build greylist"""
         # pylint: disable=W0613
-        self.logging.debug('toggling baseline from %r to %r', self.baseline, not self.baseline)
+        self.logging.info('toggling baseline from %r to %r', self.baseline, not self.baseline)
         self.baseline = not self.baseline
 
     @property
