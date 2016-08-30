@@ -10,12 +10,6 @@ class FoghornXMLRPC(xmlrpc.XMLRPC):
 
     foghorn = {}
 
-    def xmlrpc_echo(self, x):
-        """
-        Return all passed args.
-        """
-        return self.foghorn
-
     def xmlrpc_toggle_baseline(self):
         """Toggle baseline"""
         self.foghorn.toggle_baseline()
