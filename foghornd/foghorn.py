@@ -19,9 +19,21 @@ class Foghorn(object):
 
     def __init__(self, settings):
         self.settings = settings
+        self.init_logging()
         self.logging = logging.getLogger('foghornd')
         signal.signal(signal.SIGUSR1, self.toggle_baseline)
         signal.signal(signal.SIGHUP, self.reload)
+        self.init_listhandler()
+
+    def init_logging(self):
+        self.logger_manager = PluginManager("foghornd.plugins.logger",
+                                            "./foghornd/plugins/logger/",
+                                            "*.py",
+                                            "Logger")
+        for logger in self.settings.loggers:
+            self.logger_manager.new(logger, self.settings)
+
+    def init_listhandler(self):
         self.listhandler_manager = PluginManager("foghornd.plugins.listhandler",
                                                  "./foghornd/plugins/listhandler/",
                                                  "*.py",
@@ -38,7 +50,7 @@ class Foghorn(object):
     def toggle_baseline(self, signal_recvd=None, frame=None):
         """Toggle baselining - accepting all hosts to build greylist"""
         # pylint: disable=W0613
-        self.logging.debug('toggling baseline from %r to %r', self.baseline, not self.baseline)
+        self.logging.info('toggling baseline from %r to %r', self.baseline, not self.baseline)
         self.baseline = not self.baseline
 
     @property
