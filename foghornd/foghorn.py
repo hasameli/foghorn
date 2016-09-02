@@ -3,13 +3,14 @@
 import logging
 import signal
 
+from datetime import datetime
+
 from twisted.internet import defer
 from twisted.names import dns, error
 
 from foghornd.greylistentry import GreylistEntry
 from foghornd.plugin_manager import PluginManager
 
-from datetime import datetime
 
 class Foghorn(object):
     """Manage lists of greylist entries and handles the list checks."""
@@ -18,9 +19,21 @@ class Foghorn(object):
 
     def __init__(self, settings):
         self.settings = settings
+        self.init_logging()
         self.logging = logging.getLogger('foghornd')
         signal.signal(signal.SIGUSR1, self.toggle_baseline)
         signal.signal(signal.SIGHUP, self.reload)
+        self.init_listhandler()
+
+    def init_logging(self):
+        self.logger_manager = PluginManager("foghornd.plugins.logger",
+                                            "./foghornd/plugins/logger/",
+                                            "*.py",
+                                            "Logger")
+        for logger in self.settings.loggers:
+            self.logger_manager.new(logger, self.settings)
+
+    def init_listhandler(self):
         self.listhandler_manager = PluginManager("foghornd.plugins.listhandler",
                                                  "./foghornd/plugins/listhandler/",
                                                  "*.py",
@@ -30,13 +43,14 @@ class Foghorn(object):
 
     # Signal handlers
     def reload(self, signal_recvd=None, frame=None):
-        # pylint: ignore=W0613
+        """Tell the white/black/greylist handler to reload"""
+        # pylint: disable=W0613
         self.listhandler.load_lists()
 
     def toggle_baseline(self, signal_recvd=None, frame=None):
         """Toggle baselining - accepting all hosts to build greylist"""
-        # pylint: ignore=W0613
-        self.logging.debug('toggling baseline from %r to %r', self.baseline, not self.baseline)
+        # pylint: disable=W0613
+        self.logging.info('toggling baseline from %r to %r', self.baseline, not self.baseline)
         self.baseline = not self.baseline
 
     @property
@@ -63,14 +77,14 @@ class Foghorn(object):
                 self.logging.debug('Rejected by blacklist %s ref-by %s', key, self.peer_address)
                 return False
             else:
-                entry = self.listhandler.check_greylist(query,self.baseline, self.peer_address)
+                entry = self.listhandler.check_greylist(query, self.baseline, self.peer_address)
                 ret_value = False
                 if entry:
                     entry.last_seen = curtime
                     response = entry.check_greyout(curtime, self.settings)
                     ret_value = response["ret_value"]
                     message = response["message"]
-                    self.logging.debug("%s ref-by %s" % (message, self.peer_address))
+                    self.logging.debug("%s ref-by %s", message, self.peer_address)
                 else:
                     # Entry not found in any list, so add it
                     self.logging.debug('Rejected/notseen by greylist %s ref-by %s',

@@ -1,4 +1,4 @@
-"""An sqllite backend for foghorn"""
+"""An sqlite backend for foghorn"""
 
 import sqlite3
 import logging
@@ -8,12 +8,15 @@ from foghornd.plugins.listhandler import ListHandlerBase
 from foghornd.greylistentry import GreylistEntry
 
 
-class foghorn_sqllite(ListHandlerBase):
+class Sqlite(ListHandlerBase):
+    """An sqlite3 backend for foghorn"""
+
     db_file = 'foghorn.sqlite3'
     select_query = 'SELECT host, first_seen, last_seen FROM %s WHERE host=?'
     queries = {}
 
     def __init__(self, settings):
+        super(Sqlite, self).__init__(settings)
         self.settings = settings
         self.logging = logging.getLogger('foghornd')
         self.sql_conn = sqlite3.connect(self.db_file)
@@ -25,6 +28,7 @@ class foghorn_sqllite(ListHandlerBase):
         This function will be called to reload the lists.
         In our case this  does nothing
         """
+        # pylint: disable=W0613
 
     def save_state(self):
         """noop - we have no state to save"""
@@ -67,12 +71,13 @@ class foghorn_sqllite(ListHandlerBase):
         insert_query = 'INSERT OR IGNORE INTO greylist values(?, ?, ?)'
         update_query = 'UPDATE GREYLIST SET first_seen=?, last_seen=? WHERE host=?'
         cursor = self.sql_conn.cursor()
-        # sqllite3 does not support "insert or update"
+        # sqlite3 does not support "insert or update"
         cursor.execute(insert_query, (entry.dns_field, entry.first_seen, entry.last_seen))
         cursor.execute(update_query, (entry.first_seen, entry.last_seen, entry.dns_field))
         self.sql_conn.commit()
 
     def initdb(self):
+        """Create the databases and configure the queries"""
         definition = """(host TEXT NOT NULL ,
                         first_seen DATETIME NOT NULL,
                         last_seen DATETIME NOT NULL,

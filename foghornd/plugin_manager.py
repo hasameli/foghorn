@@ -1,18 +1,21 @@
 """PluginManager -- handles the loading of plugins and submodules"""
 
+import sys
 import os
 import glob
 import imp
 import inspect
-# import name spaces
+# import plugin name spaces to prevent runtime warnings
+# pylint: disable=W0611
 import foghornd.plugins.listhandler
+import foghornd.plugins.logger
 
 
 class PluginManager(object):
     """This class provides a loader for plugins"""
     modules = {}
 
-    def __init__(self, base, path="./plugins/", pattern="*.py", class_type=None): 
+    def __init__(self, base, path="./plugins/", pattern="*.py", class_type=None):
         self.load_plugins(base, path, pattern, class_type)
 
     def new(self, plugin, *args, **kwargs):
@@ -34,7 +37,11 @@ class PluginManager(object):
                 continue
             plugin_name = basename[:-3]
             plugin_namespace = "%s.%s" % (base, plugin_name)
-            plugin = imp.load_source(plugin_namespace, infile)
+            if plugin_namespace in sys.modules:
+                # Already loaded
+                plugin = sys.modules[plugin_namespace]
+            else:
+                plugin = imp.load_source(plugin_namespace, infile)
             caller = getattr(plugin, plugin_name, None)
             if caller is None:
                 raise ImportError("Class not found:", plugin_name, plugin)
@@ -46,6 +53,7 @@ class PluginManager(object):
 
 
 def inherits_from(child, parent_name):
+    """Check if a class inherits from a parent class"""
     if inspect.isclass(child):
         if parent_name in [c.__name__ for c in inspect.getmro(child)[1:]]:
             return True
