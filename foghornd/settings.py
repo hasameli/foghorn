@@ -13,6 +13,7 @@ class FoghornSettings(object):
     # PATHS
     home = os.path.dirname(__file__)
     path = os.path.join(home, "settings.json")
+    # This should be split out somewhere else for the simple handler
     whitelist_file = os.path.join(home, "greydns", "whitelist")
     blacklist_file = os.path.join(home, "greydns", "blacklist")
     greylist_file = os.path.join(home, "greydns", "greylist")
@@ -130,3 +131,39 @@ class FoghornSettings(object):
         """Convert deltatime to minutes"""
 
         self.data["refresh"] = value.total_seconds() / 60.
+
+    @property
+    def loader(self):
+        """Return which loader to use"""
+        return self.data.get("loader", "simple")
+
+    @loader.setter
+    def loader(self, value):
+        self.data["loader"] = value
+
+    @property
+    def loader_settings(self):
+        """Return settings for the loader"""
+        return self.data.get("loader_settings", {})
+
+    @loader_settings.setter
+    def loader_settings(self, value):
+        self.data["loader_settings"] = value
+
+    @property
+    def loggers(self):
+        """Return settings for the loader"""
+        return self.data.get("loggers", ["Stderr", "File"])
+
+    @loggers.setter
+    def loggers(self, value):
+        self.data["loggers"] = value
+
+    @property
+    def logger_settings(self):
+        """Return settings for the loader"""
+        return self.data.get("logger_settings", {})
+
+    @logger_settings.setter
+    def logger_settings(self, value):
+        self.data["logger_settings"] = value

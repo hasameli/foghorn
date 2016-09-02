@@ -5,6 +5,18 @@
     "file": "foghornd.log", 
     "grey_ip": "192.168.5.1", 
     "greyout": 24, 
+    "loader": "Simple", 
+    "logger_settings": {
+        "Syslog": {
+            "host": "localhost", 
+            "port": 514, 
+            "socket": "/dev/log"
+        }
+    }, 
+    "loggers": [
+        "Stderr", 
+        "Syslog"
+    ], 
     "refresh": 5, 
     "sinkhole": "127.0.0.1", 
     "sinkhole6": "::1"

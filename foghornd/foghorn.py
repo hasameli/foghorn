@@ -2,57 +2,56 @@
 
 import logging
 import signal
+
 from datetime import datetime
-import dateutil.parser
 
 from twisted.internet import defer
 from twisted.names import dns, error
 
-from foghornd.greylist_entry import GreylistEntry
+from foghornd.greylistentry import GreylistEntry
+from foghornd.plugin_manager import PluginManager
 
 
 class Foghorn(object):
     """Manage lists of greylist entries and handles the list checks."""
+    _peer_address = None
+    baseline = False
 
     def __init__(self, settings):
         self.settings = settings
-        self._peer_address = None
+        self.init_logging()
         self.logging = logging.getLogger('foghornd')
-        self.baseline = False
         signal.signal(signal.SIGUSR1, self.toggle_baseline)
-        signal.signal(signal.SIGHUP, self.load_lists)
-        self.load_lists()
+        signal.signal(signal.SIGHUP, self.reload)
+        self.init_listhandler()
 
-    def load_lists(self, signal_recvd=None, frame=None):
-        """Load the white|grey|black lists"""
-        # Signal handling
-        # pylint: ignore=W0613
-        self.whitelist = set(load_list(self.settings.whitelist_file))
-        self.blacklist = set(load_list(self.settings.blacklist_file))
-        self.greylist = {}
+    def init_logging(self):
+        self.logger_manager = PluginManager("foghornd.plugins.logger",
+                                            "./foghornd/plugins/logger/",
+                                            "*.py",
+                                            "Logger")
+        for logger in self.settings.loggers:
+            self.logger_manager.new(logger, self.settings)
 
-        for item in load_list(self.settings.greylist_file):
-            elements = [n.strip() for n in item.split(',')]
-            if len(elements) == 3:
-                entry = GreylistEntry(
-                    elements[0],
-                    dateutil.parser.parse(elements[1]),
-                    dateutil.parser.parse(elements[2])
-                )
-                self.greylist[elements[0]] = entry
-            else:
-                self.logging.debug('Error processing line: %s', item)
+    def init_listhandler(self):
+        self.listhandler_manager = PluginManager("foghornd.plugins.listhandler",
+                                                 "./foghornd/plugins/listhandler/",
+                                                 "*.py",
+                                                 "ListHandlerBase")
+        self.listhandler = self.listhandler_manager.new(self.settings.loader, self.settings)
+        self.listhandler.load_lists()
+
+    # Signal handlers
+    def reload(self, signal_recvd=None, frame=None):
+        """Tell the white/black/greylist handler to reload"""
+        # pylint: disable=W0613
+        self.listhandler.load_lists()
 
     def toggle_baseline(self, signal_recvd=None, frame=None):
         """Toggle baselining - accepting all hosts to build greylist"""
-        # Signal handling
-        # pylint: ignore=W0613
-        self.logging.debug('toggling baseline from %r to %r', self.baseline, not self.baseline)
+        # pylint: disable=W0613
+        self.logging.info('toggling baseline from %r to %r', self.baseline, not self.baseline)
         self.baseline = not self.baseline
-
-    def save_state(self):
-        """Called as the program is shutting down, put shut down tasks here."""
-        write_list(self.settings.greylist_file, self.greylist)
 
     @property
     def peer_address(self):
@@ -68,68 +67,36 @@ class Foghorn(object):
         Handle rules regarding what resolves by checking whether
         the record requested is in our lists. Order is important.
         """
-        if query.type in [dns.A, dns.AAAA]:
-            if self.check_whitelist(query):
-                return True
-            elif self.check_blacklist(query):
-                return False
-            else:
-                return self.check_greylist(query)
-
-    def check_whitelist(self, query):
-        """Check the whitelist for this query"""
-        key = query.name.name
-        if key in self.whitelist:
-            self.logging.debug('Allowed by whitelist %s ref-by %s', key, self.peer_address)
-            return True
-        return False
-
-    def check_blacklist(self, query):
-        """Check the blacklist for this query"""
-        key = query.name.name
-        if key in self.blacklist:
-            self.logging.debug('Rejected by blacklist %s ref-by %s', key, self.peer_address)
-            return True
-        return False
-
-    def check_greylist(self, query):
-        """Check the greylist for this query"""
         key = query.name.name
         curtime = datetime.now()
-        if key in self.greylist:
-            # Key exists in greylist
-            entry = self.greylist[key]
-            if (curtime - self.settings.grey_out) >= entry.first_seen:
-                # Is the entry in the greyout period?
-                if curtime - self.settings.blackout <= entry.last_seen:
-                    # Is the entry in the blackout period?
-                    self.logging.debug('Allowed by greylist %s ref-by %s',
-                                       key, self.peer_address)
-                    return True
-                else:
-                    self.logging.debug('Rejected/timeout by greylist %s ref-by %s',
-                                       key, self.peer_address)
-                    entry.first_seen()
-                    entry.last_seen()
-                    self.save_state()
-                    return False
-            else:
-                self.logging.debug('Rejected/greyout by greylist %s ref-by %s',
-                                   key, self.peer_address)
-                return False
-        else:
-            # Entry not found in any list, so add it
-            self.logging.debug('Rejected/notseen by greylist %s ref-by %s',
-                               key, self.peer_address)
-            if self.baseline:
-                self.greylist[key] = GreylistEntry(key,
-                                                   curtime - self.settings.grey_out)
-                self.save_state()
+        if query.type in [dns.A, dns.AAAA]:
+            if self.listhandler.check_whitelist(query):
+                self.logging.debug('Allowed by whitelist %s ref-by %s', key, self.peer_address)
                 return True
-            else:
-                self.greylist[key] = GreylistEntry(key)
-                self.save_state()
+            elif self.listhandler.check_blacklist(query):
+                self.logging.debug('Rejected by blacklist %s ref-by %s', key, self.peer_address)
                 return False
+            else:
+                entry = self.listhandler.check_greylist(query, self.baseline, self.peer_address)
+                ret_value = False
+                if entry:
+                    entry.last_seen = curtime
+                    response = entry.check_greyout(curtime, self.settings)
+                    ret_value = response["ret_value"]
+                    message = response["message"]
+                    self.logging.debug("%s ref-by %s", message, self.peer_address)
+                else:
+                    # Entry not found in any list, so add it
+                    self.logging.debug('Rejected/notseen by greylist %s ref-by %s',
+                                       key, self.peer_address)
+                    if self.baseline:
+                        entry = GreylistEntry(key, curtime - self.settings.grey_out)
+                        ret_value = True
+                    else:
+                        entry = GreylistEntry(key)
+                        ret_value = False
+                self.listhandler.update_greylist(entry)
+                return ret_value
 
     def build_response(self, query):
         """Build sinkholed response when disallowing a response."""
@@ -159,35 +126,3 @@ class Foghorn(object):
             return defer.succeed(self.build_response(query))
         else:
             return defer.fail(error.DomainError())
-
-
-def write_list(filename, items):
-    """Write out [gray|whit|black] blists"""
-    greylist_entries = False
-    if len(items.keys()) > 0 and isinstance(items.itervalues().next(), GreylistEntry):
-        greylist_entries = True
-    else:
-        # We're not going to support writing the other lists at the moment
-        return False
-
-    try:
-        with open(filename, mode='w') as write_file:
-            if greylist_entries:
-                for item in items.itervalues():
-                    write_file.write(format("%s,%s,%s\n" %
-                                            (item.dns_field, item.first_seen, item.last_seen)))
-                    return True
-    except IOError as io_error:
-        print "%s" % io_error
-        return False
-
-def load_list(filename):
-    """Load the specified list."""
-    lines = []
-    try:
-        with open(filename, mode='r') as read_file:
-            lines = [x.strip() for x in read_file.readlines()]
-            return lines
-    except IOError as io_error:
-        print "%s" % io_error
-        return []

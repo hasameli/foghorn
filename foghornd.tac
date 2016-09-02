@@ -38,6 +38,7 @@ class FoghornDNSServerFactory(server.DNSServerFactory):
 
         return server.DNSServerFactory.handleQuery(self, message, protocol, address)
 
+
 class Main(object):
     """Load settings and start the server"""
 
@@ -47,21 +48,6 @@ class Main(object):
     def __init__(self):
         self.settings = FoghornSettings()
         self.foghorn = Foghorn(self.settings)
-        self.init_logging()
-
-    def init_logging(self):
-        """Initalize logging objects"""
-        logger = logging.getLogger('foghornd')
-        logger.setLevel(logging.DEBUG)
-        formatter = logging.Formatter("%(asctime)s %(levelname)8s %(message)s")
-        log_streamhandler = logging.StreamHandler()
-        log_streamhandler.setLevel(logging.DEBUG)
-        log_streamhandler.setFormatter(formatter)
-        logger.addHandler(log_streamhandler)
-        file_handle = logging.FileHandler(self.settings.logfile)
-        file_handle.setLevel(logging.DEBUG)
-        file_handle.setFormatter(formatter)
-        logger.addHandler(file_handle)
 
     def run(self):
         """Kick off the server"""
@@ -86,9 +72,13 @@ def foghord_service():
     factory = FoghornDNSServerFactory(
         clients=[foghorn.foghorn, client.Resolver(resolv='/etc/resolv.conf')]
     )
-    protocol = dns.DNSDatagramProtocol(controller=factory)
 
-    return internet.UDPServer(foghorn.settings.dns_port, protocol)
+    udp_protocol = dns.DNSDatagramProtocol(controller=factory)
+    udp_server = internet.UDPServer(foghorn.settings.dns_port, udp_protocol)
+
+    tcp_server = internet.TCPServer(foghorn.settings.dns_port, factory)
+
+    return [udp_server, tcp_server]
 
 
 if __name__ == '__main__':
@@ -100,6 +90,5 @@ else:
     application = service.Application("foghorn")
 
     # attach the service to its parent application
-    service = foghord_service()
-
-    service.setServiceParent(application)
+    for item in foghord_service():
+        item.setServiceParent(application)
