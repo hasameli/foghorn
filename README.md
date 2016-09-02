@@ -40,7 +40,13 @@ listed as a comma-separated list of DNS, firstseen, and lastseen times.
 foghorn is dependent on python and twisted
 
 ### Installation
-Foghorn can be installed via PIP directly from this GitHub repository. To install first, then edit the configuration settings later, run:
+Foghorn requires that `twisted` be installed prior to use. Run:
+
+```
+pip install twisted
+```
+
+Foghorn can then be installed via PIP directly from this GitHub repository. To install first, then edit the configuration settings later, run:
 
 ```
 python -m pip install git+git://github.com/hasameli/foghorn.git --user
