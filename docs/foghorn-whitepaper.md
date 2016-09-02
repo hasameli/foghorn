@@ -85,7 +85,7 @@ Fifth, some baselining of your existing DNS traffic will be needed in order to p
 
 ## Limitations
 
-At this point in time, foghorn only intercepts "A" records. Other types of DNS records are not intercepted at this time. This is likely to change fairly quickly during development.
+At this point in time, foghorn only intercepts "A" and "AAAA" records. Other types of DNS records are not intercepted at this time. This is likely to change fairly quickly during development.
 
 If some set of users routinely engages in research activities across a broad range of domains, they may require a higher than usual requirement for expediting greyout expiry; these users may need to bypass the normal controls.
 
@@ -148,6 +148,14 @@ foghorn process has the ability to write to that location.
 before a previously unseen domain becomes valid). It's expressed in 
 hours, and defaults to 24 hours.
 
+`loader` - This value specifies how the lists are loaded. It has at this point two implemented values: `simple` and `Sqlite_subscription`. The 'simple' option is flat files; 'Sqlite_subscription' uses an sqlite3 database. This option is set to 'simple' by default.
+
+`loader_settings` - This value governs specific loader-related settings. At this point in time, it is only useful for 'Sqlite_subscription'. Internal to this value is the following setting:
+
+`subscriptions` - This value is set to a URL where a blacklist subscription can be found.
+
+`loggers` - This value designates the target for logging. Valid targets include `Stderr` and `Syslog`
+
 `refresh` - This value governs how often the greylist is written to 
 disk. It is expressed in minutes; the default is every 5 minutes.
 
@@ -157,6 +165,8 @@ greyed-out domain will be resolved to. It defaults to 127.0.0.1
 useful information to the user, replace this value with the IP of that 
 server and ensure that the webserver instance is configured to accept 
 any domain requested.
+
+`sinkhole6` - This is the same as sinkhole, but for IPv6.
 
 ## Runtime considerations
 
