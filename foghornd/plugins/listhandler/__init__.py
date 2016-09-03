@@ -2,7 +2,7 @@
 
 import logging
 from abc import ABCMeta, abstractmethod
-
+from twisted.names.dns import Query
 
 class ListHandlerBase():
     """Interface"""
