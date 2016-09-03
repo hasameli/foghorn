@@ -6,9 +6,11 @@ import glob
 import imp
 import inspect
 # import plugin name spaces to prevent runtime warnings
-# pylint: disable=W0611
 import foghornd.plugins.listhandler
 import foghornd.plugins.logger
+# Silence flake8 warnings
+assert foghornd.plugins.listhandler
+assert foghornd.plugins.logger
 
 
 class PluginManager(object):

@@ -5,13 +5,16 @@ import socket
 import xmlrpclib
 import sys
 
+
 class UnixStreamHTTPConnection(httplib.HTTPConnection):
+    """Connect socket"""
     def connect(self):
         self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.sock.connect(self.host)
 
 
 class UnixStreamTransport(xmlrpclib.Transport, object):
+    """Connect HTTP to Unix Socket"""
     def __init__(self, socket_path):
         self.socket_path = socket_path
         super(UnixStreamTransport, self).__init__()
@@ -25,26 +28,26 @@ if __name__ == '__main__':
     if len(sys.argv) != 4:
         print "foghornc.py [command] [arg] <arg2>"
         exit(1)
-    (_, command, arg, arg2) = sys.argv
-    server = xmlrpclib.Server('http://arg_unused',
+    (_, COMMAND, ARG, ARG2) = sys.argv
+    SERVER = xmlrpclib.Server('http://arg_unused',
                               transport=UnixStreamTransport("foghornd.sock"),
                               allow_none=1)
 
-    functions = {
-        "add_to_whitelist": lambda arg: server.add_to_whitelist(arg, arg2),
-        "add_to_blacklist": lambda arg: server.add_to_blacklist(arg, arg2),
-        "add_to_greylist": lambda arg: server.add_to_greylist(arg, arg2),
+    FUNCTIONS = {
+        "add_to_whitelist": lambda: SERVER.add_to_whitelist(ARG, ARG2),
+        "add_to_blacklist": lambda: SERVER.add_to_blacklist(ARG, ARG2),
+        "add_to_greylist": lambda: SERVER.add_to_greylist(ARG, ARG2),
 
-        "delete_from_whitelist": lambda arg: server.delete_from_whitelist(arg),
-        "delete_from_blacklist": lambda arg: server.delete_from_blacklist(arg),
-        "delete_from_greylist": lambda arg: server.delete_from_greylist(arg),
+        "delete_from_whitelist": lambda: SERVER.delete_from_whitelist(ARG),
+        "delete_from_blacklist": lambda: SERVER.delete_from_blacklist(ARG),
+        "delete_from_greylist": lambda: SERVER.delete_from_greylist(ARG),
 
-        "delete_tag_from_whitelist": lambda arg: server.delete_tag_from_whitelist(arg),
-        "delete_tag_from_blacklist": lambda arg: server.delete_tag_from_blacklist(arg),
-        "delete_tag_from_greylist": lambda arg: server.delete_tag_from_greylist(arg),
+        "delete_tag_from_whitelist": lambda: SERVER.delete_tag_from_whitelist(ARG),
+        "delete_tag_from_blacklist": lambda: SERVER.delete_tag_from_blacklist(ARG),
+        "delete_tag_from_greylist": lambda: SERVER.delete_tag_from_greylist(ARG),
     }
 
-    if command in functions.keys():
-        functions[command](arg)
+    if COMMAND in FUNCTIONS.keys():
+        FUNCTIONS[COMMAND]()
     else:
-        print "Unkown command: %s" % command
+        print "Unkown command: %s" % COMMAND

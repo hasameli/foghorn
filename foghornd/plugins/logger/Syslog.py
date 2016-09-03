@@ -6,6 +6,7 @@ import logging
 from foghornd.plugins.logger import Logger
 from logging.handlers import SysLogHandler
 
+
 class Syslog(Logger):
     """Logging for foghorn"""
 

@@ -64,4 +64,3 @@ class ListHandlerBase():
 
     def delete_tag_from_greylist(self, host):
         self.logging.warn("delete_tag_from_blacklist not implemented in %s" % self.__class__)
-

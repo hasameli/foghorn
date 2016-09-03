@@ -73,5 +73,4 @@ setup(name='Foghorn',
       include_package_data=True,
       install_requires=DEPENDENCIES,
       setup_requires=DEPENDENCIES,
-      zip_safe=False,
-     )
+      zip_safe=False)
