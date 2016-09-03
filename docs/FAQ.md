@@ -4,6 +4,10 @@
 
 You could, sure - but that means anyone who does manage to compromise your workstations (or users who think this is inconvenient) can set the DNS resolver to 8.8.8.8 and circumvent the controls. It's much better to make sure that only the correct path is open.
 
+* Won't this block new domains from propagating into the network?
+
+Yes, for 24 hours. After that point, if they're visited consistently, then the greylist will keep them current.
+
 * Why not just use OpenDNS or summat like? It's simpler than this setup, and they do domain reputation.
 
 Domain reputation is a great tool, but it's not very useful if someone compromises a good-reputation domain and uses it to phish you. Greylisting is more likely to catch that situation, especially if it's targeted at your company specifically.
