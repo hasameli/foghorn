@@ -53,6 +53,39 @@ class Foghorn(object):
         self.logging.info('toggling baseline from %r to %r', self.baseline, not self.baseline)
         self.baseline = not self.baseline
 
+    # API Functions
+    # Adders
+    def add_to_whitelist(self, host, tag=None):
+        self.listhandler.add_to_whitelist(host, tag)
+
+    def add_to_blacklist(self, host, tag=None):
+        self.listhandler.add_to_blacklist(host, tag)
+
+    def add_to_greylist(self, host, tag=None):
+        self.listhandler.add_to_greylist(host, tag)
+
+    # Delete a host
+    def delete_from_whitelist(self, host):
+        self.listhandler.delete_from_whitelist(host)
+
+    def delete_from_blacklist(self, host):
+        self.listhandler.delete_from_blacklist(host)
+
+    def delete_from_greylist(self, host, tag=None):
+        self.listhandler.delete_from_greylist(host)
+
+    # Delete a tag
+    def delete_tag_from_whitelist(self, host):
+        self.listhandler.delete_tag_from_whitelist(host)
+
+    def delete_tag_from_blacklist(self, host):
+        self.listhandler.delete_tag_from_blacklist(host)
+
+    def delete_tag_from_greylist(self, host, tag=None):
+        self.listhandler.delete_tag_from_greylist(host)
+
+    # End API
+
     @property
     def peer_address(self):
         """peer_address is injected in here for logging"""

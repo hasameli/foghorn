@@ -13,6 +13,9 @@ class Sqlite(ListHandlerBase):
 
     db_file = 'foghorn.sqlite3'
     select_query = 'SELECT host, first_seen, last_seen FROM %s WHERE host=?'
+    insert_query = 'INSERT OR IGNORE INTO %s (host, tag, first_seen, last_seen) VALUES (?,?, datetime("now"), datetime("now"))'
+    delete_query = 'DELETE FROM %s where host=?'
+    delete_tag_query = 'DELETE FROM %s where tag=?'
     queries = {}
 
     def __init__(self, settings):
@@ -76,21 +79,73 @@ class Sqlite(ListHandlerBase):
         cursor.execute(update_query, (entry.first_seen, entry.last_seen, entry.dns_field))
         self.sql_conn.commit()
 
+    def add_to_list(self, target, host, tag=None):
+        query = self.queries[target]["insert"]
+        cursor = self.sql_conn.cursor()
+        cursor.execute(query, (host, tag))
+        self.sql_conn.commit()
+
+    def delete_from_list(self, target, host):
+        query = self.queries[target]["delete"]
+        cursor = self.sql_conn.cursor()
+        cursor.execute(query, (host,))
+        self.sql_conn.commit()
+
+    def delete_tag_from_list(self, target, tag):
+        query = self.queries[target]["delete_tag"]
+        cursor = self.sql_conn.cursor()
+        cursor.execute(query, (tag,))
+        self.sql_conn.commit()
+
+    def add_to_whitelist(self, host, tag=None):
+        self.add_to_list("whitelist", host, tag)
+
+    def add_to_blacklist(self, host, tag=None):
+        self.add_to_list("blacklist", host, tag)
+
+    def add_to_greylist(self, host, tag=None):
+        self.add_to_list("greylist", host, tag)
+
+    def delete_from_whitelist(self, host):
+        self.delete_from_list("whitelist", host)
+
+    def delete_from_blacklist(self, host):
+        self.delete_from_list("blacklist", host)
+
+    def delete_from_greylist(self, host):
+        self.delete_from_list("greylist", host)
+
+    def delete_tag_from_whitelist(self, tag):
+        self.delete_tag_from_list("whitelist", tag)
+
+    def delete_tag_from_blacklist(self, tag):
+        self.delete_tag_from_list("blacklist", tag)
+
+    def delete_tag_from_greylist(self, tag):
+        self.delete_tag_from_list("greylist", tag)
+
     def initdb(self):
         """Create the databases and configure the queries"""
         definition = """(host TEXT NOT NULL ,
                         first_seen DATETIME NOT NULL,
                         last_seen DATETIME NOT NULL,
+                        tag TEXT,
                         PRIMARY KEY (host))"""
 
         for table in ['whitelist', 'blacklist', 'greylist']:
             query = 'CREATE TABLE IF NOT EXISTS %s %s' % (table, definition)
             self.cursor.execute(query)
+            self.sql_conn.commit()
 
         for table in ['whitelist', 'blacklist', 'greylist']:
             self.queries[table] = {}
-
-        for table in ['whitelist', 'blacklist', 'greylist']:
             self.queries[table]["select"] = self.select_query % (table)
 
-        self.sql_conn.commit()
+        for table in ['whitelist', 'blacklist', 'greylist']:
+            self.queries[table]["insert"] = self.insert_query % (table)
+
+        for table in ['whitelist', 'blacklist', 'greylist']:
+            self.queries[table]["delete"] = self.delete_query % (table)
+
+        for table in ['whitelist', 'blacklist', 'greylist']:
+            self.queries[table]["delete_tag"] = self.delete_tag_query % (table)

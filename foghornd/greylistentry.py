@@ -17,7 +17,7 @@ class GreylistEntry(object):
 
     @dns_field.setter
     def dns_field(self, value):
-        #TODO: this needs logic to define acceptable DNS names
+        # TODO: this needs logic to define acceptable DNS names
         if len(value) <= 255:
             self._dns_field = value
             return True

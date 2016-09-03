@@ -36,3 +36,31 @@ class ListHandlerBase():
     @abstractmethod
     def update_greylist(self, entry):
         """update the greylist with this entry"""
+
+    # TODO: make these @abstractmethods after Simple is updated
+    def add_to_whitelist(self, host, tag=None):
+        self.logging.warn("add_to_whitelist not implemented in %s" % self.__class__)
+
+    def add_to_blacklist(self, host, tag=None):
+        self.logging.warn("add_to_blacklist not implemented in %s" % self.__class__)
+
+    def add_to_greylist(self, host, tag=None):
+        self.logging.warn("add_to_blacklist not implemented in %s" % self.__class__)
+
+    def delete_from_whitelist(self, host):
+        self.logging.warn("delete_from_whitelist not implemented in %s" % self.__class__)
+
+    def delete_from_blacklist(self, host):
+        self.logging.warn("delete_from_blacklist not implemented in %s" % self.__class__)
+
+    def delete_from_greylist(self, host):
+        self.logging.warn("delete_from_blacklist not implemented in %s" % self.__class__)
+
+    def delete_tag_from_whitelist(self, host):
+        self.logging.warn("delete_tag_from_whitelist not implemented in %s" % self.__class__)
+
+    def delete_tag_from_blacklist(self, host):
+        self.logging.warn("delete_tag_from_blacklist not implemented in %s" % self.__class__)
+
+    def delete_tag_from_greylist(self, host):
+        self.logging.warn("delete_tag_from_blacklist not implemented in %s" % self.__class__)
