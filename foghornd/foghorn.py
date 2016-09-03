@@ -54,6 +54,9 @@ class Foghorn(object):
         self.baseline = not self.baseline
 
     # API Functions
+    def query_host(self, host):
+        return self.listhandler.query_host(host)
+
     # Adders
     def add_to_whitelist(self, host, tag=None):
         self.listhandler.add_to_whitelist(host, tag)
