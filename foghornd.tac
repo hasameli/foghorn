@@ -42,7 +42,8 @@ def foghord_service():
     udp_protocol = dns.DNSDatagramProtocol(controller=factory)
     udp_server = internet.UDPServer(foghorn.settings.dns_port, udp_protocol)
     tcp_server = internet.TCPServer(foghorn.settings.dns_port, factory)
-    xml_server = internet.TCPServer(7080, webserver.Site(foghorn.foghornrpc))
+    #xml_server = internet.TCPServer(7080, webserver.Site(foghorn.foghornrpc))
+    xml_server = internet.UNIXServer("foghornd.sock", webserver.Site(foghorn.foghornrpc))
     return [udp_server, tcp_server, xml_server]
 
 
