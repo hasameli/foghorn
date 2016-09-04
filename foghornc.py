@@ -34,6 +34,8 @@ if __name__ == '__main__':
                               allow_none=1)
 
     FUNCTIONS = {
+        "query_host": lambda: SERVER.query_host(ARG),
+
         "add_to_whitelist": lambda: SERVER.add_to_whitelist(ARG, ARG2),
         "add_to_blacklist": lambda: SERVER.add_to_blacklist(ARG, ARG2),
         "add_to_greylist": lambda: SERVER.add_to_greylist(ARG, ARG2),
@@ -48,6 +50,7 @@ if __name__ == '__main__':
     }
 
     if COMMAND in FUNCTIONS.keys():
-        FUNCTIONS[COMMAND]()
+        RESULT = FUNCTIONS[COMMAND]()
+        print "Result: %s" % RESULT
     else:
         print "Unkown command: %s" % COMMAND

@@ -71,11 +71,11 @@ class Sqlite(ListHandlerBase):
             return entry
 
     def update_greylist(self, entry):
-        insert_query = 'INSERT OR IGNORE INTO greylist values(?, ?, ?)'
+        insert_query = 'INSERT OR IGNORE INTO greylist values(?, ?, ?, ?)'
         update_query = 'UPDATE GREYLIST SET first_seen=?, last_seen=? WHERE host=?'
         cursor = self.sql_conn.cursor()
         # sqlite3 does not support "insert or update"
-        cursor.execute(insert_query, (entry.dns_field, entry.first_seen, entry.last_seen))
+        cursor.execute(insert_query, (entry.dns_field, entry.first_seen, entry.last_seen, "foghorn"))
         cursor.execute(update_query, (entry.first_seen, entry.last_seen, entry.dns_field))
         self.sql_conn.commit()
 

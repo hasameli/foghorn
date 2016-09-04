@@ -17,6 +17,11 @@ class FoghornXMLRPC(xmlrpc.XMLRPC):
     def xmlrpc_reload_lists(self):
         self.foghorn.reload()
 
+    def xmlrpc_query_host(self, host):
+        res = self.foghorn.query_host(host)
+        self.foghorn.logging.error(res)
+        return res
+
     def xmlrpc_add_to_whitelist(self, host, tag=None):
         self.foghorn.add_to_whitelist(host, tag)
 
