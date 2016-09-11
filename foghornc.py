@@ -23,10 +23,12 @@ class UnixStreamTransport(xmlrpclib.Transport, object):
         return UnixStreamHTTPConnection(self.socket_path)
 
 if __name__ == '__main__':
+    if len(sys.argv) == 2:
+        sys.argv.append(None)
     if len(sys.argv) == 3:
         sys.argv.append(None)
     if len(sys.argv) != 4:
-        print "foghornc.py [command] [arg] <arg2>"
+        print "foghornc.py [command] <arg> <arg2>"
         exit(1)
     (_, COMMAND, ARG, ARG2) = sys.argv
     SERVER = xmlrpclib.Server('http://arg_unused',
@@ -47,6 +49,11 @@ if __name__ == '__main__':
         "delete_tag_from_whitelist": lambda: SERVER.delete_tag_from_whitelist(ARG),
         "delete_tag_from_blacklist": lambda: SERVER.delete_tag_from_blacklist(ARG),
         "delete_tag_from_greylist": lambda: SERVER.delete_tag_from_greylist(ARG),
+
+        "query_all_lists": lambda: SERVER.query_all_lists(),
+        "query_blacklist": lambda: SERVER.query_blacklist(),
+        "query_whitelist": lambda: SERVER.query_whitelist(),
+        "query_greylist": lambda: SERVER.query_greylist(),
     }
 
     if COMMAND in FUNCTIONS.keys():
