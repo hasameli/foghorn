@@ -57,6 +57,18 @@ class Foghorn(object):
     def query_host(self, host):
         return self.listhandler.query_host(host)
 
+    def query_all_lists(self):
+        return self.listhandler.query_all_lists()
+
+    def query_greylist(self):
+        return self.listhandler.query_greylist()
+
+    def query_blacklist(self):
+        return self.listhandler.query_blacklist()
+
+    def query_whitelist(self):
+        return self.listhandler.query_whitelist()
+
     # Adders
     def add_to_whitelist(self, host, tag=None):
         self.listhandler.add_to_whitelist(host, tag)
