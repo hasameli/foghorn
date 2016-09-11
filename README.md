@@ -37,13 +37,15 @@ listed as a comma-separated list of DNS, firstseen, and lastseen times.
 
 
 ### Dependencies
-foghorn is dependent on python and twisted
+foghorn is dependent on python, twisted, python-dateutil, and requests
+
+Your OS may have specific packages required to install some of these - for example, CentOS 7 demands python-devel
 
 ### Installation
-Foghorn requires that `twisted` be installed prior to use. Run:
+Foghorn requires that `twisted`, `python-dateutil`, and `requests` be installed prior to use. Run:
 
 ```
-pip install twisted
+pip install twisted python-dateutil requests
 ```
 
 Foghorn can then be installed via PIP directly from this GitHub repository. To install first, then edit the configuration settings later, run:
@@ -57,7 +59,13 @@ Otherwise, you can clone the repository and install it manually:
 git clone https://github.com/hasameli/foghorn.git
 cd foghorn
 python setup.py install --user
+
 ```
+After you have configured the settings in `foghornd/settings.json` appropriately for your network (see the docs folder for an explanation of the settings) you can run foghorn with
+```
+make run
+```
+and test it out. 
 
 
 ### Deployment Instructions
@@ -82,6 +90,16 @@ adjusted accordingly.
 ## FAQ
 
 [Available here](https://github.com/hasameli/foghorn/blob/master/docs/FAQ.md)
+
+## Gotchas
+
+Installing this within Virtualbox or KVM may require [forwarding ports](http://wiki.libvirt.org/page/Networking#Forwarding_Incoming_Connections) in order to ensure access to the VM.
+
+Some OSs may require development tools be installed before twisted will install correctly.
+
+If you desire foghorn to run on the standard DNS port 53, you MUST run with root privileges. Use this with caution! The default port is set to 10053 specifically to avoid this.
+
+If you change the settings in `settings.json` you will need to rerun `setup.py` as per the instructions above before the new settings will be enabled.
 
 ## Contributor Guidelines
 

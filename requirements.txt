@@ -1,1 +1,3 @@
 twisted
+python-dateutil
+requests

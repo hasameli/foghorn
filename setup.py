@@ -66,6 +66,9 @@ setup(name='Foghorn',
       maintainer_email="foghorn@hasameli.com",
       packages=['foghornd'],
       package_data={'foghornd': [
+          'plugins/*.py',
+          'plugins/listhandler/*',
+          'plugins/logger/*',
           'greydns/*',
           'settings.json'
       ]},
