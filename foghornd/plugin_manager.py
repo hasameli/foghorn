@@ -8,9 +8,11 @@ import inspect
 # import plugin name spaces to prevent runtime warnings
 import foghornd.plugins.listhandler
 import foghornd.plugins.logger
+import foghornd.plugins.hooks
 # Silence flake8 warnings
 assert foghornd.plugins.listhandler
 assert foghornd.plugins.logger
+assert foghornd.plugins.hooks
 
 
 class PluginManager(object):

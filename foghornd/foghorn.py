@@ -10,12 +10,15 @@ from twisted.names import dns, error
 
 from foghornd.greylistentry import GreylistEntry
 from foghornd.plugin_manager import PluginManager
+from foghornd.plugins.hooks import HooksBase
 
 
 class Foghorn(object):
     """Manage lists of greylist entries and handles the list checks."""
     _peer_address = None
     baseline = False
+    hook_types = ["init"]
+    hooks = {}
 
     def __init__(self, settings):
         self.settings = settings
@@ -24,6 +27,8 @@ class Foghorn(object):
         signal.signal(signal.SIGUSR1, self.toggle_baseline)
         signal.signal(signal.SIGHUP, self.reload)
         self.init_listhandler()
+        self.init_hooks()
+        self.run_hook("init")
 
     def init_logging(self):
         self.logger_manager = PluginManager("foghornd.plugins.logger",
@@ -40,6 +45,31 @@ class Foghorn(object):
                                                  "ListHandlerBase")
         self.listhandler = self.listhandler_manager.new(self.settings.loader, self.settings)
         self.listhandler.load_lists()
+
+    def init_hooks(self):
+        for hook_type in self.hook_types:
+            self.hooks[hook_type] = []
+
+        self.hooks_manager = PluginManager("foghornd.plugins.hooks",
+                                           "./foghornd/plugins/hooks/",
+                                           "*.py",
+                                           "HooksBase")
+        for hook in self.settings.hooks:
+            hook_obj = self.hooks_manager.new(hook, self.settings, self)
+            for hook_type in self.hook_types:
+                # If the class has not been explicitly defined skip it.
+                is_baseclass = getattr(hook_obj.__class__, hook_type) == \
+                               getattr(HooksBase, hook_type)
+                if is_baseclass:
+                    continue
+
+                caller = getattr(hook_obj, hook_type, None)
+                if caller:
+                    self.hooks[hook_type].insert(0, caller)
+
+    def run_hook(self, hook, *args):
+        for func in self.hooks[hook]:
+            func(*args)
 
     # Signal handlers
     def reload(self, signal_recvd=None, frame=None):
