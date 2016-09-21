@@ -24,7 +24,7 @@ class PluginManager(object):
 
     def new(self, plugin, *args, **kwargs):
         """Create a new plugin type, passing extra args to constructor"""
-        if self.modules[plugin]:
+        if plugin in self.modules.keys():
             return self.modules[plugin](*args, **kwargs)
 
     def load_plugins(self, base, path, pattern="*.py", class_type=None):
