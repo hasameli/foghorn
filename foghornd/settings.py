@@ -41,6 +41,15 @@ class FoghornSettings(object):
     # ----------
 
     @property
+    def hooks(self):
+        """Return hooks"""
+        return self.data.get("hooks")
+
+    @hooks.setter
+    def hooks(self, value):
+        self.data["hooks"] = value
+
+    @property
     def logfile(self):
         """Return current logfile"""
         return self.data.get("logfile", "foghornd.log")
