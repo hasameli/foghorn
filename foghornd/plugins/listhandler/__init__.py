@@ -63,7 +63,16 @@ class ListHandlerBase():
         self.logging.warn("delete_tag_from_blacklist not implemented in %s" % self.__class__)
 
     def delete_tag_from_greylist(self, host):
-        self.logging.warn("delete_tag_from_blacklist not implemented in %s" % self.__class__)
+        self.logging.warn("delete_tag_from_greylist not implemented in %s" % self.__class__)
+
+    def query_blacklist(self):
+        self.logging.warn("query_blacklist not implemented in %s" % self.__class__)
+
+    def query_whitelist(self):
+        self.logging.warn("query_whitelist not implemented in %s" % self.__class__)
+
+    def query_greylist(self):
+        self.logging.warn("query_greylist not implemented in %s" % self.__class__)
 
     # Implemented methods
     def query_host(self, host):
@@ -75,4 +84,11 @@ class ListHandlerBase():
             res["greylist"] = True
         else:
             res["greylist"] = False
+        return res
+
+    def query_all_lists(self):
+        res = {}
+        res["blacklist"] = self.query_blacklist()
+        res["whitelist"] = self.query_whitelist()
+        res["greylist"] = self.query_greylist()
         return res

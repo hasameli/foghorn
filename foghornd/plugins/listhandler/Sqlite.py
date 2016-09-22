@@ -124,6 +124,24 @@ class Sqlite(ListHandlerBase):
     def delete_tag_from_greylist(self, tag):
         self.delete_tag_from_list("greylist", tag)
 
+    def query_greylist(self):
+        query = "SELECT HOST, FIRST_SEEN, LAST_SEEN, TAG FROM greylist"
+        cursor = self.sql_conn.cursor()
+        cursor.execute(query)
+        return cursor.fetchall()
+
+    def query_whitelist(self):
+        query = "SELECT HOST, FIRST_SEEN, LAST_SEEN, TAG FROM whitelist"
+        cursor = self.sql_conn.cursor()
+        cursor.execute(query)
+        return cursor.fetchall()
+
+    def query_blacklist(self):
+        query = "SELECT HOST, FIRST_SEEN, LAST_SEEN, TAG FROM blacklist"
+        cursor = self.sql_conn.cursor()
+        cursor.execute(query)
+        return cursor.fetchall()
+
     def initdb(self):
         """Create the databases and configure the queries"""
         definition = """(host TEXT NOT NULL ,

@@ -8,9 +8,11 @@ import inspect
 # import plugin name spaces to prevent runtime warnings
 import foghornd.plugins.listhandler
 import foghornd.plugins.logger
+import foghornd.plugins.hooks
 # Silence flake8 warnings
 assert foghornd.plugins.listhandler
 assert foghornd.plugins.logger
+assert foghornd.plugins.hooks
 
 
 class PluginManager(object):
@@ -22,7 +24,7 @@ class PluginManager(object):
 
     def new(self, plugin, *args, **kwargs):
         """Create a new plugin type, passing extra args to constructor"""
-        if self.modules[plugin]:
+        if plugin in self.modules.keys():
             return self.modules[plugin](*args, **kwargs)
 
     def load_plugins(self, base, path, pattern="*.py", class_type=None):

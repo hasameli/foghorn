@@ -48,3 +48,15 @@ class FoghornXMLRPC(xmlrpc.XMLRPC):
 
     def xmlrpc_delete_tag_from_greylist(self, tag):
         self.foghorn.delete_tag_from_greylist(tag)
+
+    def xmlrpc_query_all_lists(self):
+        return self.foghorn.query_all_lists()
+
+    def xmlrpc_query_blacklist(self):
+        return self.foghorn.query_blacklist()
+
+    def xmlrpc_query_whitelist(self):
+        return self.foghorn.query_whitelist()
+
+    def xmlrpc_query_greylist(self):
+        return self.foghorn.query_greylist()
