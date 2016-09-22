@@ -65,7 +65,7 @@ class Foghorn(object):
 
                 caller = getattr(hook_obj, hook_type, None)
                 if caller:
-                    self.hooks[hook_type].insert(0, caller)
+                    self.hooks[hook_type].append(caller)
 
     def run_hook(self, hook, *args):
         for func in self.hooks[hook]:
