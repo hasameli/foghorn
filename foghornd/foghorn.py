@@ -201,8 +201,10 @@ class Foghorn(object):
         # Disable the warning that timeout is unused. We have to
         # accept the argument.
         # pylint: disable=W0613
-        print query
-        print self.ACL.check_acl("allow_a", self.peer_address.host)
+        print("Allowed: %s %s " %
+              (self.peer_address.host,
+               self.ACL.check_acl("allow_a", self.peer_address.host)))
+
         if not self.list_check(query):
             return defer.succeed(self.build_response(query))
         else:
