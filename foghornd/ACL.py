@@ -1,7 +1,6 @@
 """ACL - Access control lists for foghorn"""
 
 from ipaddress import ip_address, ip_network
-import collections
 
 
 class ACL(object):
@@ -18,29 +17,23 @@ class ACL(object):
             acl_black = acl_settings.get("deny_%s" % acl, None)
 
             if acl_list:
-                try:  # Network
-                    rule = ip_network(unicode(acl_list))
-                except ValueError:  # Host
-                    rule = ip_address(unicode(acl_list))
+                rule = ip_network(unicode(acl_list))
 
             if acl_black:
-                try:  # Network
-                    rule = rule.address_exclude(ip_network(unicode(acl_black)))
-                except ValueError:  # Host
-                    rule = rule.address_exclude(ip_address(unicode(acl_black)))
+                rule = rule.address_exclude(ip_network(unicode(acl_black)))
 
-            if isinstance(rule, collections.Iterable):
-                self.acls["allow_%s" % acl] = [rule]
-            else:
-                self.acls["allow_%s" % acl] = rule
+            self.acls["allow_%s" % acl] = rule
 
     def check_acl(self, acl, host):
         host = ip_address(unicode(host))
-        if not self.acls[acl]:
-            return True
+        rules = self.acls[acl]
 
-        for acl_list in self.acls[acl]:
-            print acl_list
-            if host in acl_list:
+        try:
+            for rule in rules:
+                if host in rule:
+                    return True
+        except ValueError:
+            if host in rules:
                 return True
+
         return False
