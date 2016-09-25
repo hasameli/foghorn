@@ -11,7 +11,7 @@ from twisted.names import dns, error
 from foghornd.greylistentry import GreylistEntry
 from foghornd.plugin_manager import PluginManager
 from foghornd.plugins.hooks import HooksBase
-
+from foghornd.ACL import ACL
 
 class Foghorn(object):
     """Manage lists of greylist entries and handles the list checks."""
@@ -27,6 +27,7 @@ class Foghorn(object):
         signal.signal(signal.SIGUSR1, self.toggle_baseline)
         signal.signal(signal.SIGHUP, self.reload)
         self.init_listhandler()
+        self.ACL = ACL(settings)
         self.init_hooks()
         self.run_hook("init")
 
@@ -200,6 +201,8 @@ class Foghorn(object):
         # Disable the warning that timeout is unused. We have to
         # accept the argument.
         # pylint: disable=W0613
+        print query
+        print self.ACL.check_acl("allow_a", self.peer_address.host)
         if not self.list_check(query):
             return defer.succeed(self.build_response(query))
         else:

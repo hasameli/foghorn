@@ -8,7 +8,7 @@ class ACL(object):
 
     def __init__(self, settings={}):
         """Acceptance: (allow_TYPE or 0.0.0.0/0) - deny_TYPE"""
-        acl_settings = settings.get("acl", {})
+        acl_settings = settings.acl
         for acl in ["a"]:
             # Default Accept
             rule = ip_network(u"0.0.0.0/0")
@@ -30,6 +30,7 @@ class ACL(object):
             self.acls["allow_%s" % acl] = rule
 
     def check_acl(self, acl, host):
+        host = ip_address(unicode(host))
         if not self.acls[acl]:
             return True
         try:

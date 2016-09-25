@@ -176,3 +176,11 @@ class FoghornSettings(object):
     @logger_settings.setter
     def logger_settings(self, value):
         self.data["logger_settings"] = value
+
+    @property
+    def acl(self):
+        return self.data.get("acl", {})
+
+    @acl.setter
+    def acl(self):
+        self.data["acl"] = self
