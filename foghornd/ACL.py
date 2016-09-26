@@ -10,29 +10,31 @@ class ACL(object):
         """Acceptance: (allow_TYPE or 0.0.0.0/0) - deny_TYPE"""
         acl_settings = settings.acl
         for acl in ["a"]:
-            # Default Accept
-            rule = ip_network(u"0.0.0.0/0")
+            acl_name = "allow_%s" % acl
+            self.acls[acl_name] = {}
 
             acl_list = acl_settings.get("allow_%s" % acl, None)
             acl_black = acl_settings.get("deny_%s" % acl, None)
 
             if acl_list:
                 rule = ip_network(unicode(acl_list))
+                self.acls[acl_name]["allow"] = rule
 
             if acl_black:
-                rule = rule.address_exclude(ip_network(unicode(acl_black)))
-                self.acls["allow_%s" % acl] = rule
-            else:
-                self.acls["allow_%s" % acl] = [rule]
+                rule = ip_network(unicode(acl_black))
+                self.acls[acl_name]["deny"] = rule
 
     def check_acl(self, acl, host):
         host = ip_address(unicode(host))
         rule = self.acls[acl]
-        if not rule:
-            return True
 
-        for r in rule:
-            if host in r:
+        if "deny" in rule:
+            if host in rule["deny"]:
+                return ["false"]
+
+        if "allow" in rule:
+            if host in rule["allow"]:
                 return True
+            return False
 
-        return False
+        return True
