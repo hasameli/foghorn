@@ -21,19 +21,16 @@ class ACL(object):
 
             if acl_black:
                 rule = rule.address_exclude(ip_network(unicode(acl_black)))
-
-            self.acls["allow_%s" % acl] = rule
+                self.acls["allow_%s" % acl] = rule
+            else:
+                self.acls["allow_%s" % acl] = [rule]
 
     def check_acl(self, acl, host):
         host = ip_address(unicode(host))
-        rules = self.acls[acl]
+        rule = self.acls[acl]
 
-        try:
-            for rule in rules:
-                if host in rule:
-                    return True
-        except ValueError:
-            if host in rules:
+        for r in rule:
+            if host in r:
                 return True
 
         return False
