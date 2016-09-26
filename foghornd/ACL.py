@@ -18,23 +18,38 @@ class ACL(object):
 
             if acl_list:
                 rule = ip_network(unicode(acl_list))
-                self.acls[acl_name]["allow"] = rule
+                self.acls[acl_name]["allow"] = self.compile_rule(rule)
 
             if acl_black:
                 rule = ip_network(unicode(acl_black))
-                self.acls[acl_name]["deny"] = rule
+                self.acls[acl_name]["deny"] = self.compile_rule(rule)
+
+    def compile_rule(self, rule):
+        compiled = {}
+        for host in rule:
+            compiled[host] = 1
+        return compiled
 
     def check_acl(self, acl, host):
         host = ip_address(unicode(host))
         rule = self.acls[acl]
 
-        if "deny" in rule:
-            if host in rule["deny"]:
-                return ["false"]
-
-        if "allow" in rule:
-            if host in rule["allow"]:
-                return True
+        try:
+            rule["deny"][host]
             return False
+        except KeyError:
+            pass
+
+        try:
+            rule["allow"][host]
+            return True
+        except KeyError:
+            pass
+
+        try:
+            rule["allow"]
+            return False
+        except KeyError:
+            pass
 
         return True
