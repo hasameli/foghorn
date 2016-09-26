@@ -28,6 +28,8 @@ class ACL(object):
     def check_acl(self, acl, host):
         host = ip_address(unicode(host))
         rule = self.acls[acl]
+        if not rule:
+            return True
 
         for r in rule:
             if host in r:
