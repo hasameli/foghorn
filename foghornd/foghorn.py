@@ -63,18 +63,19 @@ class Foghorn(object):
                                            "./foghornd/plugins/hooks/",
                                            "*.py",
                                            "HooksBase")
-        for hook in self.settings.hooks:
-            hook_obj = self.hooks_manager.new(hook, self.settings, self)
-            for hook_type in self.hook_types:
-                # If the class has not been explicitly defined skip it.
-                is_baseclass = getattr(hook_obj.__class__, hook_type) == \
-                               getattr(HooksBase, hook_type)
-                if is_baseclass:
-                    continue
+        if self.settings.hooks:
+            for hook in self.settings.hooks:
+                hook_obj = self.hooks_manager.new(hook, self.settings, self)
+                for hook_type in self.hook_types:
+                    # If the class has not been explicitly defined skip it.
+                    is_baseclass = getattr(hook_obj.__class__, hook_type) == \
+                                   getattr(HooksBase, hook_type)
+                    if is_baseclass:
+                        continue
 
-                caller = getattr(hook_obj, hook_type, None)
-                if caller:
-                    self.hooks[hook_type].append(caller)
+                    caller = getattr(hook_obj, hook_type, None)
+                    if caller:
+                        self.hooks[hook_type].append(caller)
 
     def run_hook(self, hook, *args):
         for func in self.hooks[hook]:
