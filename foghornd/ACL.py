@@ -16,7 +16,6 @@ class ACL(object):
             acl_name = "allow_%s" % acl
             self.acls[acl_name] = {}
 
-
             acl_list = acl_settings.get("allow_%s" % acl, None)
             acl_black = acl_settings.get("deny_%s" % acl, None)
 
