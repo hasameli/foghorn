@@ -19,7 +19,8 @@ except ImportError:
 DEPENDENCIES = [
     'twisted',
     'ipaddress',
-    'python-dateutil'
+    'python-dateutil',
+    'service_identity'
 ]
 
 SHORT_DESCRIPTION = 'Foghorn is a configurable DNS proxy to allow for black-, white-, and greylisting of DNS resources.'
