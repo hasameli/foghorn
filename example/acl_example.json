@@ -1,0 +1,44 @@
+{
+    "acl": {
+        "allow_a": "192.168.88.0/24"
+    }, 
+    "blackout": 180, 
+    "dns_port": 10053, 
+    "dns_server_ip": "192.168.1.1", 
+    "file": "foghornd.log", 
+    "grey_ip": "192.168.5.1", 
+    "greyout": 24, 
+    "hooks": [
+        "Subscriptions"
+    ], 
+    "loader": "Sqlite", 
+    "loader_settings": {
+        "subscriptions": [
+            {
+                "delete": 1, 
+                "tag": "test", 
+                "type": "json", 
+                "url": "https://www.zackallison.com/foghorn.json"
+            }, 
+            {
+                "tag": "host_test", 
+                "type": "hostfile", 
+                "url": "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
+            }
+        ]
+    }, 
+    "logger_settings": {
+        "Syslog": {
+            "host": "localhost", 
+            "port": 514, 
+            "socket": "/dev/log"
+        }
+    }, 
+    "loggers": [
+        "Stderr", 
+        "Syslog"
+    ], 
+    "refresh": 5, 
+    "sinkhole": "127.0.0.1", 
+    "sinkhole6": "::1"
+}

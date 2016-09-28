@@ -6,11 +6,12 @@ import signal
 from datetime import datetime
 
 from twisted.internet import defer
-from twisted.names import dns, error
+from twisted.names import dns, error, client
 
 from foghornd.greylistentry import GreylistEntry
 from foghornd.plugin_manager import PluginManager
 from foghornd.plugins.hooks import HooksBase
+from foghornd.ACL import ACL
 
 
 class Foghorn(object):
@@ -19,6 +20,9 @@ class Foghorn(object):
     baseline = False
     hook_types = ["init"]
     hooks = {}
+    acl_map = {dns.A: "allow_a", dns.AAAA: "allow_aaaa",
+               dns.MX: "allow_mx", dns.SRV: "allow_srv"}
+    resolver = client.Resolver(resolv="/etc/resolv.conf")
 
     def __init__(self, settings):
         self.settings = settings
@@ -27,6 +31,11 @@ class Foghorn(object):
         signal.signal(signal.SIGUSR1, self.toggle_baseline)
         signal.signal(signal.SIGHUP, self.reload)
         self.init_listhandler()
+        self.ACL = ACL(settings)
+
+        if settings.resolver:
+            self.resolver = client.Resolver(servers=settings.resolver)
+
         self.init_hooks()
         self.run_hook("init")
 
@@ -54,18 +63,19 @@ class Foghorn(object):
                                            "./foghornd/plugins/hooks/",
                                            "*.py",
                                            "HooksBase")
-        for hook in self.settings.hooks:
-            hook_obj = self.hooks_manager.new(hook, self.settings, self)
-            for hook_type in self.hook_types:
-                # If the class has not been explicitly defined skip it.
-                is_baseclass = getattr(hook_obj.__class__, hook_type) == \
-                               getattr(HooksBase, hook_type)
-                if is_baseclass:
-                    continue
+        if self.settings.hooks:
+            for hook in self.settings.hooks:
+                hook_obj = self.hooks_manager.new(hook, self.settings, self)
+                for hook_type in self.hook_types:
+                    # If the class has not been explicitly defined skip it.
+                    is_baseclass = getattr(hook_obj.__class__, hook_type) == \
+                                   getattr(HooksBase, hook_type)
+                    if is_baseclass:
+                        continue
 
-                caller = getattr(hook_obj, hook_type, None)
-                if caller:
-                    self.hooks[hook_type].append(caller)
+                    caller = getattr(hook_obj, hook_type, None)
+                    if caller:
+                        self.hooks[hook_type].append(caller)
 
     def run_hook(self, hook, *args):
         for func in self.hooks[hook]:
@@ -147,7 +157,7 @@ class Foghorn(object):
         """
         key = query.name.name
         curtime = datetime.now()
-        if query.type in [dns.A, dns.AAAA]:
+        if query.type in [dns.A, dns.AAAA, dns.MX, dns.SRV]:
             if self.listhandler.check_whitelist(query):
                 self.logging.debug('Allowed by whitelist %s ref-by %s', key, self.peer_address)
                 return True
@@ -184,9 +194,10 @@ class Foghorn(object):
             answer = dns.RRHeader(name=name,
                                   type=dns.AAAA,
                                   payload=dns.Record_AAAA(address=b'%s' % self.settings.sinkhole6))
-        else:
+        elif query.type == dns.A:
             answer = dns.RRHeader(name=name,
                                   payload=dns.Record_A(address=b'%s' % (self.settings.sinkhole)))
+
         answers = [answer]
         authority = []
         additional = []
@@ -200,7 +211,29 @@ class Foghorn(object):
         # Disable the warning that timeout is unused. We have to
         # accept the argument.
         # pylint: disable=W0613
-        if not self.list_check(query):
-            return defer.succeed(self.build_response(query))
-        else:
-            return defer.fail(error.DomainError())
+
+        # ACL:
+        try:
+            if not self.ACL.check_acl(self.acl_map[query.type],
+                                      self.peer_address.host):
+                # Failed the ACL, refuse to answer
+                return defer.fail(error.DNSQueryRefusedError())
+        except KeyError:
+            # Refuse to answer if we have no ACL for this type.
+            # All non A, AAAA, MX, and SRV records fall here
+            return defer.fail(error.DNSQueryRefusedError())
+
+        # FogHorn Greylisting:
+        if self.list_check(query):
+            # We've passed Foghorn!  Now we actually resolve the request
+            return self.resolver.query(query, timeout)
+        elif self.sinkholeable(query):
+            # We've been requested to sinkhole this query
+            return self.build_response(query)
+
+        # No sinkhole defined, refuse to answer
+        return defer.fail(error.DNSQueryRefusedError())
+
+    def sinkholeable(self, query):
+        return ((query.type == dns.A and self.settings.sinkhole) or
+                (query.type == dns.AAAA and self.settings.sinkhole6))

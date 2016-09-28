@@ -36,7 +36,7 @@ def foghord_service():
     foghorn = Main()
 
     factory = FoghornDNSServerFactory(
-        clients=[foghorn.foghorn, client.Resolver(resolv='/etc/resolv.conf')]
+        clients=[foghorn.foghorn]
     )
 
     udp_protocol = dns.DNSDatagramProtocol(controller=factory)
