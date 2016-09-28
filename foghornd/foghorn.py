@@ -168,7 +168,7 @@ class Foghorn(object):
             else:
                 entry = self.listhandler.check_greylist(query, self.baseline, self.peer_address)
                 ret_value = False
-                if entry:
+                if entry and not self.baseline:
                     entry.last_seen = curtime
                     response = entry.check_greyout(curtime, self.settings)
                     ret_value = response["ret_value"]
@@ -176,12 +176,15 @@ class Foghorn(object):
                     self.logging.debug("%s ref-by %s", message, self.peer_address)
                 else:
                     # Entry not found in any list, so add it
-                    self.logging.debug('Rejected/notseen by greylist %s ref-by %s',
-                                       key, self.peer_address)
                     if self.baseline:
-                        entry = GreylistEntry(key, curtime - self.settings.grey_out)
+                        self.logging.debug('Allowed by baseline by %s ref-by %s',
+                                           key, self.peer_address)
+
+                        entry = GreylistEntry(key, curtime - self.settings.grey_out, curtime)
                         ret_value = True
                     else:
+                        self.logging.debug('Rejected/notseen by greylist %s ref-by %s',
+                                           key, self.peer_address)
                         entry = GreylistEntry(key)
                         ret_value = False
                 self.listhandler.update_greylist(entry)
