@@ -32,6 +32,10 @@ class Foghorn(object):
         signal.signal(signal.SIGHUP, self.reload)
         self.init_listhandler()
         self.ACL = ACL(settings)
+
+        if settings.resolver:
+            self.resolver = client.Resolver(servers=settings.resolver)
+
         self.init_hooks()
         self.run_hook("init")
 

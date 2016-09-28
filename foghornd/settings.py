@@ -182,5 +182,13 @@ class FoghornSettings(object):
         return self.data.get("acl", {})
 
     @acl.setter
-    def acl(self):
-        self.data["acl"] = self
+    def acl(self, value):
+        self.data["acl"] = value
+
+    @property
+    def resolver(self):
+        return self.data.get("resolver", None)
+
+    @resolver.setter
+    def resolver(self, value):
+        self.data["resolver"] = value
