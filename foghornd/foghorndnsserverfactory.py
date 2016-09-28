@@ -4,7 +4,7 @@ import logging
 import socket
 
 from twisted.internet.address import IPv4Address
-from twisted.names import server
+from twisted.names import server, dns, error
 
 
 class FoghornDNSServerFactory(server.DNSServerFactory):
@@ -28,3 +28,18 @@ class FoghornDNSServerFactory(server.DNSServerFactory):
                 resolver.peer_address = self.peer_address
 
         return server.DNSServerFactory.handleQuery(self, message, protocol, address)
+
+    def gotResolverError(self, failure, protocol, message, address):
+        """Return the proper error"""
+        if failure.check(error.DNSQueryRefusedError):
+            rCode = dns.EREFUSED
+        elif failure.check(dns.DomainError, dns.AuthoritativeDomainError):
+            print "ename"
+            rCode = dns.ENAME
+        else:
+            rCode = dns.ESERVER
+
+        response = self._responseFromMessage(message=message, rCode=rCode)
+
+        self.sendReply(protocol, response, address)
+        self._verboseLog("Lookup failed")
