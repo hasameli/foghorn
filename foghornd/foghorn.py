@@ -6,12 +6,13 @@ import signal
 from datetime import datetime
 
 from twisted.internet import defer
-from twisted.names import dns, error
+from twisted.names import dns, error, client
 
 from foghornd.greylistentry import GreylistEntry
 from foghornd.plugin_manager import PluginManager
 from foghornd.plugins.hooks import HooksBase
 from foghornd.ACL import ACL
+
 
 class Foghorn(object):
     """Manage lists of greylist entries and handles the list checks."""
@@ -19,6 +20,9 @@ class Foghorn(object):
     baseline = False
     hook_types = ["init"]
     hooks = {}
+    acl_map = {dns.A: "allow_a", dns.AAAA: "allow_aaaa",
+               dns.MX: "allow_mx", dns.SRV: "allow_srv"}
+    resolver = client.Resolver(resolv="/etc/resolv.conf")
 
     def __init__(self, settings):
         self.settings = settings
@@ -148,7 +152,7 @@ class Foghorn(object):
         """
         key = query.name.name
         curtime = datetime.now()
-        if query.type in [dns.A, dns.AAAA]:
+        if query.type in [dns.A, dns.AAAA, dns.MX, dns.SRV]:
             if self.listhandler.check_whitelist(query):
                 self.logging.debug('Allowed by whitelist %s ref-by %s', key, self.peer_address)
                 return True
@@ -185,9 +189,10 @@ class Foghorn(object):
             answer = dns.RRHeader(name=name,
                                   type=dns.AAAA,
                                   payload=dns.Record_AAAA(address=b'%s' % self.settings.sinkhole6))
-        else:
+        elif query.type == dns.A:
             answer = dns.RRHeader(name=name,
                                   payload=dns.Record_A(address=b'%s' % (self.settings.sinkhole)))
+
         answers = [answer]
         authority = []
         additional = []
@@ -201,11 +206,29 @@ class Foghorn(object):
         # Disable the warning that timeout is unused. We have to
         # accept the argument.
         # pylint: disable=W0613
-        print("Allowed: %s %s " %
-              (self.peer_address.host,
-               self.ACL.check_acl("allow_a", self.peer_address.host)))
 
-        if not self.list_check(query):
-            return defer.succeed(self.build_response(query))
-        else:
-            return defer.fail(error.DomainError())
+        # ACL:
+        try:
+            if not self.ACL.check_acl(self.acl_map[query.type],
+                                      self.peer_address.host):
+                # Failed the ACL, refuse to answer
+                return defer.fail(error.DNSQueryRefusedError())
+        except KeyError:
+            # Refuse to answer if we have no ACL for this type.
+            # All non A, AAAA, MX, and SRV records fall here
+            return defer.fail(error.DNSQueryRefusedError())
+
+        # FogHorn Greylisting:
+        if self.list_check(query):
+            # We've passed Foghorn!  Now we actually resolve the request
+            return self.resolver.query(query, timeout)
+        elif self.sinkholeable(query):
+            # We've been requested to sinkhole this query
+            return self.build_response(query)
+
+        # No sinkhole defined, refuse to answer
+        return defer.fail(error.DNSQueryRefusedError())
+
+    def sinkholeable(self, query):
+        return ((query.type == dns.A and self.settings.sinkhole) or
+                (query.type == dns.AAAA and self.settings.sinkhole6))

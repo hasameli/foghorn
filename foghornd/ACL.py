@@ -5,13 +5,17 @@ from ipaddress import ip_address, ip_network
 
 class ACL(object):
     acls = {}
+    default = False
 
     def __init__(self, settings={}):
         """Acceptance: (allow_TYPE or 0.0.0.0/0) - deny_TYPE"""
         acl_settings = settings.acl
-        for acl in ["a"]:
+        # By default deny unless we have a whitelist
+        self.default = acl_settings.get("default", False)
+        for acl in ["a", "aaaa", "mx", "srv"]:
             acl_name = "allow_%s" % acl
             self.acls[acl_name] = {}
+
 
             acl_list = acl_settings.get("allow_%s" % acl, None)
             acl_black = acl_settings.get("deny_%s" % acl, None)
@@ -52,4 +56,4 @@ class ACL(object):
         except KeyError:
             pass
 
-        return True
+        return self.default
