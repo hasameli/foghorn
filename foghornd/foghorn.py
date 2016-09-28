@@ -2,6 +2,7 @@
 
 import logging
 import signal
+import sys
 
 from datetime import datetime
 
@@ -226,13 +227,19 @@ class Foghorn(object):
         # FogHorn Greylisting:
         if self.list_check(query):
             # We've passed Foghorn!  Now we actually resolve the request
-            return self.resolver.query(query, timeout)
+            result = None
+            try:
+                result =  self.resolver.query(query, timeout)
+                return result
+            except:
+                self.logging.error("resolver error:", sys.exc_info())
+
         elif self.sinkholeable(query):
             # We've been requested to sinkhole this query
             return self.build_response(query)
-
-        # No sinkhole defined, refuse to answer
-        return defer.fail(error.DNSQueryRefusedError())
+        else:
+            # No sinkhole defined, refuse to answer
+            return defer.fail(error.DNSQueryRefusedError())
 
     def sinkholeable(self, query):
         return ((query.type == dns.A and self.settings.sinkhole) or
