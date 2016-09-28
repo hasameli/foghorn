@@ -23,7 +23,7 @@ class Foghorn(object):
     hooks = {}
     acl_map = {dns.A: "allow_a", dns.AAAA: "allow_aaaa",
                dns.MX: "allow_mx", dns.SRV: "allow_srv"}
-    resolver = client.Resolver(resolv="/etc/resolv.conf")
+    resolver = None
 
     def __init__(self, settings):
         self.settings = settings
@@ -35,7 +35,10 @@ class Foghorn(object):
         self.ACL = ACL(settings)
 
         if settings.resolver:
-            self.resolver = client.Resolver(servers=settings.resolver)
+            upstream_servers = [tuple(l) for l in settings.resolver]
+            self.resolver = client.Resolver(servers=upstream_servers)
+        else:
+            self.resolver = client.Resolver(resolv="/etc/resolv.conf")
 
         self.init_hooks()
         self.run_hook("init")
