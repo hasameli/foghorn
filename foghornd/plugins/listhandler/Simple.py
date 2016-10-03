@@ -10,9 +10,9 @@ from foghornd.greylistentry import GreylistEntry
 class Simple(ListHandlerBase):
     """Simple ListHandler"""
 
-    whitelist = None
-    blacklist = None
-    greylist = None
+    whitelist = {}
+    blacklist = {}
+    greylist = {}
 
     def __init__(self, settings):
         super(Simple, self).__init__(settings)
