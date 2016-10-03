@@ -1,6 +1,7 @@
 """ base --- hooks for foghornd """
 
 import requests
+import re
 from foghornd.plugins.hooks import HooksBase
 
 """
@@ -56,8 +57,12 @@ class Subscriptions (HooksBase):
         items = response.text
         addips = ["0.0.0.0"]
         for item in items.split("\n"):
-            row = item.split()
+            clean_line = re.sub('#.*','',item)
+            if not item:
+                continue
+
+            row = clean_line.split(" ")
             if len(row) < 2:
                 continue
-            if row[1] in addips:
-                self.foghorn.add_to_blacklist(row[2], subscription["tag"])
+            if row[0] in addips:
+                self.foghorn.add_to_blacklist(row[1], subscription["tag"])
