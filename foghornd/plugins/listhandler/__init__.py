@@ -37,33 +37,41 @@ class ListHandlerBase():
     def update_greylist(self, entry):
         """update the greylist with this entry"""
 
-    # TODO: make these @abstractmethods after Simple is updated
+    @abstractmethod
     def add_to_whitelist(self, host, tag=None):
-        self.logging.warn("add_to_whitelist not implemented in %s" % self.__class__)
+        """add an entry to the whitelist"""
 
+    @abstractmethod
     def add_to_blacklist(self, host, tag=None):
-        self.logging.warn("add_to_blacklist not implemented in %s" % self.__class__)
+        """add an entry to the blacklist"""
 
+    @abstractmethod
     def add_to_greylist(self, host, tag=None):
-        self.logging.warn("add_to_blacklist not implemented in %s" % self.__class__)
+        """add an entry to the greylist"""
 
+    @abstractmethod
     def delete_from_whitelist(self, host):
-        self.logging.warn("delete_from_whitelist not implemented in %s" % self.__class__)
+        """remove an entry from the whitelist"""
 
+    @abstractmethod
     def delete_from_blacklist(self, host):
-        self.logging.warn("delete_from_blacklist not implemented in %s" % self.__class__)
+        """remove an entry from the blacklist"""
 
+    @abstractmethod
     def delete_from_greylist(self, host):
-        self.logging.warn("delete_from_blacklist not implemented in %s" % self.__class__)
+        """remove an entry from the greylist"""
 
-    def delete_tag_from_whitelist(self, host):
-        self.logging.warn("delete_tag_from_whitelist not implemented in %s" % self.__class__)
+    @abstractmethod
+    def delete_tag_from_whitelist(self, tag):
+        """delete all entries from whitelist match tag"""
 
-    def delete_tag_from_blacklist(self, host):
-        self.logging.warn("delete_tag_from_blacklist not implemented in %s" % self.__class__)
+    @abstractmethod
+    def delete_tag_from_blacklist(self, tag):
+        """delete all entries from blacklist match tag"""
 
-    def delete_tag_from_greylist(self, host):
-        self.logging.warn("delete_tag_from_greylist not implemented in %s" % self.__class__)
+    @abstractmethod
+    def delete_tag_from_greylist(self, tag):
+        """delete all entries from whitelist match tag"""
 
     def query_blacklist(self):
         self.logging.warn("query_blacklist not implemented in %s" % self.__class__)
