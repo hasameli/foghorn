@@ -131,7 +131,7 @@ def write_list(filename, items):
                 for item in items.itervalues():
                     write_file.write(format("%s,%s,%s\n" %
                                             (item.dns_field, item.first_seen, item.last_seen)))
-                    return True
+        return True
     except IOError as io_error:
         print "%s" % io_error
         return False
