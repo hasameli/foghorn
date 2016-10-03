@@ -59,7 +59,6 @@ class Simple(ListHandlerBase):
             self.blacklist[query.name.name]
             return True
         except KeyError:
-            print "Not in blacklist"
             return False
 
     def check_greylist(self, query, baseline, peer_address):
