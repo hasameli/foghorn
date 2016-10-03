@@ -23,9 +23,11 @@ class Simple(ListHandlerBase):
         """Load the white|grey|black lists"""
         # Signal handling
         # pylint: disable=W0613
-        self.whitelist = set(load_list(self.settings.whitelist_file))
-        self.blacklist = set(load_list(self.settings.blacklist_file))
-        self.greylist = {}
+        for item in load_list(self.settings.whitelist_file):
+            self.whitelist[item] = 'whitelistfile'
+
+        for item in load_list(self.settings.blacklist_file):
+            self.blacklist[item] = 'blacklistfile'
 
         for item in load_list(self.settings.greylist_file):
             elements = [n.strip() for n in item.split(',')]
