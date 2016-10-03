@@ -47,29 +47,74 @@ class Simple(ListHandlerBase):
 
     def check_whitelist(self, query):
         """Check the whitelist for this query"""
-        key = query.name.name
-        if key in self.whitelist:
+        try:
+            self.whitelist[query.name.name]
             return True
-        return False
+        except KeyError:
+            return False
 
     def check_blacklist(self, query):
         """Check the blacklist for this query"""
-        key = query.name.name
-        if key in self.blacklist:
+        try:
+            self.blacklist[query.name.name]
             return True
-        return False
+        except KeyError:
+            print "Not in blacklist"
+            return False
 
     def check_greylist(self, query, baseline, peer_address):
         """Check the greylist for this query"""
-        key = query.name.name
-        if key in self.greylist:
-            # Key exists in greylist
-            return self.greylist[key]
+        try:
+            return self.greylist[query.name.name]
+        except KeyError:
+            return False
 
     def update_greylist(self, entry):
         key = entry.dns_field
         self.greylist[key] = entry
         self.save_state()
+
+    def add_to_whitelist(self, host, tag=1):
+        self.whitelist[host] = tag
+
+    def add_to_blacklist(self, host, tag=1):
+        self.blacklist[host] = tag
+
+    def add_to_greylist(self, host, tag=1):
+        self.greylist[host] = tag
+
+    def delete_from_whitelist(self, host):
+        del self.whitelist[host]
+
+    def delete_from_greylist(self, host):
+        del self.greylist[host]
+
+    def delete_from_blacklist(self, host):
+        del self.blacklist[host]
+
+    def delete_tag_from_whitelist(self, tag):
+        for key in self.whitelist:
+            if self.whitelist[key] == tag:
+                del self.whitelist[key]
+
+    def delete_tag_from_greylist(self, tag):
+        for key in self.greylist.keys():
+            if self.greylist[key] == tag:
+                del self.greylist[key]
+
+    def delete_tag_from_blacklist(self, tag):
+        for key in self.blacklist.keys():
+            if self.blacklist[key] == tag:
+                del self.blacklist[key]
+
+    def query_blacklist(self):
+        return [self.blacklist.keys()]
+
+    def query_whitelist(self):
+        return [self.blacklist.keys()]
+
+    def query_greylist(self):
+        return [self.greylist.keys()]
 
 
 def write_list(filename, items):
