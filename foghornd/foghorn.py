@@ -233,12 +233,10 @@ class Foghorn(object):
         # FogHorn Greylisting:
         if self.list_check(query):
             # We've passed Foghorn!  Now we actually resolve the request
-            result = None
             try:
-                result = self.resolver.query(query, timeout)
-                return result
+                return self.resolver.query(query, timeout)
             except:
-                self.logging.error("resolver error:", sys.exc_info())
+                self.logging.error("Error trying to resolve query upstream")
 
         elif self.sinkholeable(query):
             # We've been requested to sinkhole this query
