@@ -38,12 +38,18 @@ def foghord_service():
     factory = FoghornDNSServerFactory(
         clients=[foghorn.foghorn]
     )
+    factory.noisy = False
 
     udp_protocol = dns.DNSDatagramProtocol(controller=factory)
+    udp_protocol.noisy = False
     udp_server = internet.UDPServer(foghorn.settings.dns_port, udp_protocol)
+    udp_server.noisy = False
     tcp_server = internet.TCPServer(foghorn.settings.dns_port, factory)
     #xml_server = internet.TCPServer(7080, webserver.Site(foghorn.foghornrpc))
-    xml_server = internet.UNIXServer("foghornd.sock", webserver.Site(foghorn.foghornrpc))
+    rpcsite = webserver.Site(foghorn.foghornrpc)
+    rpcsite.noisy = False
+    xml_server = internet.UNIXServer("foghornd.sock", rpcsite)
+
     return [udp_server, tcp_server, xml_server]
 
 
