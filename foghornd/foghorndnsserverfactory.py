@@ -34,7 +34,6 @@ class FoghornDNSServerFactory(server.DNSServerFactory):
         if failure.check(error.DNSQueryRefusedError):
             rCode = dns.EREFUSED
         elif failure.check(dns.DomainError, dns.AuthoritativeDomainError):
-            print "ename"
             rCode = dns.ENAME
         else:
             rCode = dns.ESERVER
