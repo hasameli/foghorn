@@ -11,6 +11,7 @@ from twisted.names import dns, error, client
 
 from foghornd.greylistentry import GreylistEntry
 from foghornd.plugin_manager import PluginManager
+from twisted.python import log
 from foghornd.plugins.hooks import HooksBase
 from foghornd.ACL import ACL
 
@@ -233,11 +234,14 @@ class Foghorn(object):
         # FogHorn Greylisting:
         if self.list_check(query):
             # We've passed Foghorn!  Now we actually resolve the request
+            orig = log.msg
             try:
+                log.msg = ignoremsg
                 return self.resolver.query(query, timeout)
             except:
                 self.logging.error("Error trying to resolve query upstream")
 
+            log.msg = orig
         elif self.sinkholeable(query):
             # We've been requested to sinkhole this query
             return self.build_response(query)
@@ -248,3 +252,7 @@ class Foghorn(object):
     def sinkholeable(self, query):
         return ((query.type == dns.A and self.settings.sinkhole) or
                 (query.type == dns.AAAA and self.settings.sinkhole6))
+
+
+def ignoremsg(*args):
+    pass
