@@ -55,7 +55,7 @@ class Subscriptions (HooksBase):
         If the host is mapped to an ip in addips it is added to the blacklist
         """
         items = response.text
-        addips = ["0.0.0.0"]
+        addips = ["0.0.0.0", "127.0.0.1"]
         for item in items.split("\n"):
             clean_line = re.sub('#.*','',item)
             if not item:
