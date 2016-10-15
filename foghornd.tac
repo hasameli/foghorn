@@ -7,7 +7,7 @@ according to the settings in foghornd/settings.json
 """
 
 from twisted.application import service, internet
-from twisted.names import client, dns
+from twisted.names import client, dns, cache
 
 from twisted.web import server as webserver
 
@@ -36,6 +36,7 @@ def foghord_service():
     foghorn = Main()
 
     factory = FoghornDNSServerFactory(
+        caches=[cache.CacheResolver()],
         clients=[foghorn.foghorn]
     )
     factory.noisy = False
