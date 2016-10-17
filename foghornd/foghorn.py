@@ -224,11 +224,13 @@ class Foghorn(object):
         try:
             if not self.ACL.check_acl(self.acl_map[query.type],
                                       self.peer_address.host):
+                self.logging.warn("Host failed ACL", self.peer_address.host)
                 # Failed the ACL, refuse to answer
                 return defer.fail(error.DNSQueryRefusedError())
         except KeyError:
             # Refuse to answer if we have no ACL for this type.
             # All non A, AAAA, MX, and SRV records fall here
+            self.logging.warn("No ACL defined for", query.type)
             return defer.fail(error.DNSQueryRefusedError())
 
         # FogHorn Greylisting:
