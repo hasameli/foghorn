@@ -45,7 +45,9 @@ def foghord_service():
 
     addresses = []
     for iface in netifaces.interfaces():
-        for addr in netifaces.ifaddresses(iface)[2]:
+        for addr in netifaces.ifaddresses(iface)[netifaces.AF_INET]:
+            addresses.append(addr["addr"])
+        for addr in netifaces.ifaddresses(iface)[netifaces.AF_INET6]:
             addresses.append(addr["addr"])
 
     for listen in addresses:
