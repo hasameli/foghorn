@@ -47,8 +47,6 @@ def foghord_service():
     for iface in netifaces.interfaces():
         for addr in netifaces.ifaddresses(iface)[netifaces.AF_INET]:
             addresses.append(addr["addr"])
-        for addr in netifaces.ifaddresses(iface)[netifaces.AF_INET6]:
-            addresses.append(addr["addr"])
 
     for listen in addresses:
         udp_protocol = dns.DNSDatagramProtocol(controller=factory)
