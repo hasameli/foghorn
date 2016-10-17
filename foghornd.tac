@@ -44,9 +44,12 @@ def foghord_service():
     factory.noisy = False
 
     addresses = []
-    for iface in netifaces.interfaces():
-        for addr in netifaces.ifaddresses(iface)[netifaces.AF_INET]:
-            addresses.append(addr["addr"])
+    try:
+        addresses = foghorn.settings.listen
+    except AttributeError:
+        for iface in netifaces.interfaces():
+            for addr in netifaces.ifaddresses(iface)[netifaces.AF_INET]:
+                addresses.append(addr["addr"])
 
     for listen in addresses:
         udp_protocol = dns.DNSDatagramProtocol(controller=factory)
