@@ -242,7 +242,7 @@ class Foghorn(object):
         # FogHorn Greylisting:
         if self.list_check(query):
             # We've passed Foghorn!  Now we actually resolve the request
-            self.passed("failed_acl", self.peer_address, query)
+            self.run_hook("passed", self.peer_address, query)
             orig = log.msg
             try:
                 log.msg = ignoremsg
