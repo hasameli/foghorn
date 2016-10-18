@@ -1,6 +1,7 @@
 """ base --- hooks for foghornd """
 
 import logging
+from foghornd.plugins.hooks import HooksBase
 
 """
 This module exposes hooks allowing plugins to extend the
@@ -10,59 +11,60 @@ more information
 """
 
 
-class HooksBase(object):
+class Logging(HooksBase):
     """Hooks for foghorn"""
-
-    def __init__(self, settings, foghorn):
-        """Each object holds a copy of the settings and a logger"""
-        self.settings = settings
-        self.logger = logging.getLogger('foghornd')
-        self.foghorn = foghorn
-
-    def init(self):
-        """Called on startup"""
-        pass
 
     def query(self, peer, query):
         """Called for every query before processing"""
-        pass
+        logger = self.foghorn.logging.debug
+        logger("query: %s %s" % (peer, query))
 
     def failed_acl(self, peer, query):
         """A query has failed the ACL"""
-        pass
+        logger = self.foghorn.logging.warn
+        logger("Failed ACL: %s - %s" % (peer, query))
 
     def no_acl(self, peer, query):
         """A query type has no ACL"""
-        pass
+        logger = self.foghorn.logging.warn
+        logger("no_acl: %s - %s" % (peer, query))
 
     def passed(self, peer, query):
         """A query type has passed greylisting"""
-        pass
+        logger = self.foghorn.logging.debug
+        logger("passed: %s - %s" % (peer, query))
 
     def upstream_error(self, peer, query):
         """Failure resolving this query"""
-        pass
+        logger = self.foghorn.logging.error
+        logger("upstream_error: %s - %s" % (peer, query))
 
     def sinkhole(self, peer, query):
         """A query will be sinkholed"""
-        pass
+        logger = self.foghorn.logging.debug
+        logger("sinkhole: %s - %s" % (peer, query))
 
     def refused(self, peer, query):
         """A query has been refused"""
-        pass
+        logger = self.foghorn.logging.debug
+        logger("refused: %s - %s" % (peer, query))
 
     def whitelist(self, peer, query):
         """A query has passed the whitelist"""
-        pass
+        logger = self.foghorn.logging.debug
+        logger("whitelist: %s - %s" % (peer, query))
 
     def blacklist(self, peer, query):
         """A query has failed the blacklist"""
-        pass
+        logger = self.foghorn.logging.debug
+        logger("blacklist: %s - %s" % (peer, query))
 
     def greylist_passed(self, peer, query, msg):
         """A query has failed the blacklist"""
-        pass
+        logger = self.foghorn.logging.debug
+        logger("greylist_passed: %s - %s - %s" % (peer, query, msg))
 
     def greylist_failed(self, peer, query, msg):
         """A query has failed the blacklist"""
-        pass
+        logger = self.foghorn.logging.debug
+        logger("greylist_failed: %s - %s - %s" % (peer, query, msg))
