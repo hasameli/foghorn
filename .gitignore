@@ -9,3 +9,7 @@ twistd.pid
 foghornd/greydns/*
 foghorn.sqlite3
 *.sqlite3
+virtenv/
+.eggs
+*.egg
+virtualenv

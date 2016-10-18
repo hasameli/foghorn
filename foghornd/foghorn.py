@@ -2,6 +2,7 @@
 
 import logging
 import signal
+import sys
 
 from datetime import datetime
 
@@ -10,6 +11,7 @@ from twisted.names import dns, error, client
 
 from foghornd.greylistentry import GreylistEntry
 from foghornd.plugin_manager import PluginManager
+from twisted.python import log
 from foghornd.plugins.hooks import HooksBase
 from foghornd.ACL import ACL
 
@@ -18,11 +20,13 @@ class Foghorn(object):
     """Manage lists of greylist entries and handles the list checks."""
     _peer_address = None
     baseline = False
-    hook_types = ["init"]
+    hook_types = ["init", "query", "failed_acl", "no_acl",
+                  "passed", "upstream_error", "sinkhole", "refused",
+                  "whitelist", "blacklist", "greylist_passed", "greylist_failed"]
     hooks = {}
     acl_map = {dns.A: "allow_a", dns.AAAA: "allow_aaaa",
                dns.MX: "allow_mx", dns.SRV: "allow_srv"}
-    resolver = client.Resolver(resolv="/etc/resolv.conf")
+    resolver = None
 
     def __init__(self, settings):
         self.settings = settings
@@ -34,7 +38,10 @@ class Foghorn(object):
         self.ACL = ACL(settings)
 
         if settings.resolver:
-            self.resolver = client.Resolver(servers=settings.resolver)
+            upstream_servers = [tuple(l) for l in settings.resolver]
+            self.resolver = client.Resolver(servers=upstream_servers)
+        else:
+            self.resolver = client.Resolver(resolv="/etc/resolv.conf")
 
         self.init_hooks()
         self.run_hook("init")
@@ -159,30 +166,37 @@ class Foghorn(object):
         curtime = datetime.now()
         if query.type in [dns.A, dns.AAAA, dns.MX, dns.SRV]:
             if self.listhandler.check_whitelist(query):
-                self.logging.debug('Allowed by whitelist %s ref-by %s', key, self.peer_address)
+                self.run_hook("whitelist", self.peer_address, query)
                 return True
             elif self.listhandler.check_blacklist(query):
-                self.logging.debug('Rejected by blacklist %s ref-by %s', key, self.peer_address)
+                self.run_hook("blacklist", self.peer_address, query)
                 return False
             else:
+                log_msg = ""
                 entry = self.listhandler.check_greylist(query, self.baseline, self.peer_address)
                 ret_value = False
-                if entry:
+                if entry and not self.baseline:
                     entry.last_seen = curtime
                     response = entry.check_greyout(curtime, self.settings)
                     ret_value = response["ret_value"]
                     message = response["message"]
-                    self.logging.debug("%s ref-by %s", message, self.peer_address)
+                    log_msg = "%s ref-by %s" % (message, self.peer_address)
                 else:
                     # Entry not found in any list, so add it
-                    self.logging.debug('Rejected/notseen by greylist %s ref-by %s',
-                                       key, self.peer_address)
                     if self.baseline:
-                        entry = GreylistEntry(key, curtime - self.settings.grey_out)
+                        log_msg = "Allowed by baseline by %s ref-by %s", (key, self.peer_address)
+                        entry = GreylistEntry(key, curtime - self.settings.grey_out, curtime)
                         ret_value = True
                     else:
+                        log_msg = "Rejected/notseen by greylist %s ref-by %s" % (key, self.peer_address)
                         entry = GreylistEntry(key)
                         ret_value = False
+
+                if ret_value:
+                    self.run_hook("greylist_passed", self.peer_address, query, log_msg)
+                else:
+                    self.run_hook("greylist_failed", self.peer_address, query, log_msg)
+
                 self.listhandler.update_greylist(entry)
                 return ret_value
 
@@ -211,29 +225,45 @@ class Foghorn(object):
         # Disable the warning that timeout is unused. We have to
         # accept the argument.
         # pylint: disable=W0613
-
+        self.run_hook("query", self.peer_address, query)
         # ACL:
         try:
             if not self.ACL.check_acl(self.acl_map[query.type],
                                       self.peer_address.host):
                 # Failed the ACL, refuse to answer
+                self.run_hook("failed_acl", self.peer_address, query)
                 return defer.fail(error.DNSQueryRefusedError())
         except KeyError:
             # Refuse to answer if we have no ACL for this type.
             # All non A, AAAA, MX, and SRV records fall here
+            self.run_hook("no_acl", self.peer_address, query)
             return defer.fail(error.DNSQueryRefusedError())
 
         # FogHorn Greylisting:
         if self.list_check(query):
             # We've passed Foghorn!  Now we actually resolve the request
-            return self.resolver.query(query, timeout)
+            self.run_hook("passed", self.peer_address, query)
+            orig = log.msg
+            try:
+                log.msg = ignoremsg
+                return self.resolver.query(query, timeout)
+            except:
+                self.run_hook("upstream_error", self.peer_address, query)
+
+            log.msg = orig
         elif self.sinkholeable(query):
             # We've been requested to sinkhole this query
+            self.run_hook("sinkhole", self.peer_address, query)
             return self.build_response(query)
-
-        # No sinkhole defined, refuse to answer
-        return defer.fail(error.DNSQueryRefusedError())
+        else:
+            # No sinkhole defined, refuse to answer
+            self.run_hook("refused", self.peer_address, query)
+            return defer.fail(error.DNSQueryRefusedError())
 
     def sinkholeable(self, query):
         return ((query.type == dns.A and self.settings.sinkhole) or
                 (query.type == dns.AAAA and self.settings.sinkhole6))
+
+
+def ignoremsg(*args):
+    pass

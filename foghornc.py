@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """Foghornc --- Foghorn client for RPC"""
 
 import httplib
