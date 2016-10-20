@@ -25,7 +25,9 @@ class Foghorn(object):
                   "whitelist", "blacklist", "greylist_passed", "greylist_failed"]
     hooks = {}
     acl_map = {dns.A: "allow_a", dns.AAAA: "allow_aaaa",
-               dns.MX: "allow_mx", dns.SRV: "allow_srv"}
+               dns.MX: "allow_mx", dns.SRV: "allow_srv",
+               dns.PTR: "allow_ptr"}
+
     resolver = None
 
     def __init__(self, settings):
