@@ -166,7 +166,7 @@ class Foghorn(object):
         """
         key = query.name.name
         curtime = datetime.now()
-        if query.type in [dns.A, dns.AAAA, dns.MX, dns.SRV]:
+        if query.type in [dns.A, dns.AAAA, dns.MX, dns.SRV, dns.PTR]:
             if self.listhandler.check_whitelist(query):
                 self.run_hook("whitelist", self.peer_address, query)
                 return True

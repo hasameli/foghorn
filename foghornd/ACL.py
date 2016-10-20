@@ -12,7 +12,7 @@ class ACL(object):
         acl_settings = settings.acl
         # By default deny unless we have a whitelist
         self.default = acl_settings.get("default", False)
-        for acl in ["a", "aaaa", "mx", "srv"]:
+        for acl in ["a", "aaaa", "mx", "srv", "ptr"]:
             acl_name = "allow_%s" % acl
             self.acls[acl_name] = {}
 
