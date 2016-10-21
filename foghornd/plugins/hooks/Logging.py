@@ -68,3 +68,8 @@ class Logging(HooksBase):
         """A query has failed the blacklist"""
         logger = self.foghorn.logging.debug
         logger("greylist_failed: %s - %s - %s" % (peer, query, msg))
+
+    def cache(self, query):
+        """A query has been responded to from the cache"""
+        logger = self.foghorn.logger.info
+        logger("cached: %s" % query)

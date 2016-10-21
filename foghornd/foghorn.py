@@ -22,7 +22,8 @@ class Foghorn(object):
     baseline = False
     hook_types = ["init", "query", "failed_acl", "no_acl",
                   "passed", "upstream_error", "sinkhole", "refused",
-                  "whitelist", "blacklist", "greylist_passed", "greylist_failed"]
+                  "whitelist", "blacklist", "greylist_passed", "greylist_failed",
+                  "cache"]
     hooks = {}
     acl_map = {dns.A: "allow_a", dns.AAAA: "allow_aaaa",
                dns.MX: "allow_mx", dns.SRV: "allow_srv",

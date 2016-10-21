@@ -12,7 +12,7 @@ from twisted.names import dns, cache
 
 from twisted.web import server as webserver
 
-from foghornd import Foghorn, FoghornSettings
+from foghornd import Foghorn, FoghornSettings, Cache
 from foghornd.foghornrpc import FoghornXMLRPC
 from foghornd.foghorndnsserverfactory import FoghornDNSServerFactory
 
@@ -36,9 +36,10 @@ def foghord_service():
     # create a resource to serve static files
     foghorn = Main()
     servers = []
-
+    fcache = Cache.Cache()
+    fcache.foghorn = foghorn.foghorn
     factory = FoghornDNSServerFactory(
-        caches=[cache.CacheResolver()],
+        caches=[fcache],
         clients=[foghorn.foghorn]
     )
     factory.noisy = False
