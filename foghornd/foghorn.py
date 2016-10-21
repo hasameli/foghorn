@@ -228,7 +228,6 @@ class Foghorn(object):
         # Disable the warning that timeout is unused. We have to
         # accept the argument.
         # pylint: disable=W0613
-        self.run_hook("query", self.peer_address, query)
         # ACL:
         try:
             if not self.ACL.check_acl(self.acl_map[query.type],
