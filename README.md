@@ -97,7 +97,7 @@ Installing this within Virtualbox or KVM may require [forwarding ports](http://w
 
 Some OSs may require development tools be installed before twisted will install correctly.
 
-FreeBSD requires `pkg install openssl` installed before foghorn can be installed. It also may require symlinking a 'python' alias to /usr/local/bin/python2.7 
+FreeBSD requires `pkg install openssl databases/py-sqlite3` installed before foghorn can be installed. It also may require symlinking a 'python' alias to /usr/local/bin/python2.7 
 
 If you desire foghorn to run on the standard DNS port 53, you MUST run with root privileges. Use this with caution! The default port is set to 10053 specifically to avoid this.
 
