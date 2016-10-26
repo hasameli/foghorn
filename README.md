@@ -42,10 +42,10 @@ foghorn is dependent on python, twisted, python-dateutil, and requests
 Your OS may have specific packages required to install some of these - for example, CentOS 7 demands python-devel
 
 ### Installation
-Foghorn requires that `twisted`, `python-dateutil`, and `requests` be installed prior to use. Run:
+Foghorn requires that `twisted`, `python-dateutil`, `netifaces`, and `requests` be installed prior to use. Run:
 
 ```
-pip install twisted python-dateutil requests
+pip install twisted python-dateutil requests netifaces
 ```
 
 Foghorn can then be installed via PIP directly from this GitHub repository. To install first, then edit the configuration settings later, run:
@@ -96,6 +96,8 @@ adjusted accordingly.
 Installing this within Virtualbox or KVM may require [forwarding ports](http://wiki.libvirt.org/page/Networking#Forwarding_Incoming_Connections) in order to ensure access to the VM.
 
 Some OSs may require development tools be installed before twisted will install correctly.
+
+FreeBSD requires `pkg install openssl` installed before foghorn can be installed. It also may require symlinking a 'python' alias to /usr/local/bin/python2.7 
 
 If you desire foghorn to run on the standard DNS port 53, you MUST run with root privileges. Use this with caution! The default port is set to 10053 specifically to avoid this.
 
