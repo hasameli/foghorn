@@ -52,8 +52,12 @@ def foghord_service():
 
     if not addresses:
         for iface in netifaces.interfaces():
-            for addr in netifaces.ifaddresses(iface)[netifaces.AF_INET]:
-                addresses.append(addr["addr"])
+            try:
+                for addr in netifaces.ifaddresses(iface)[netifaces.AF_INET]:
+                    addresses.append(addr["addr"])
+            except KeyError:
+                # No address for this interface
+                pass
 
     for listen in addresses:
         udp_protocol = dns.DNSDatagramProtocol(controller=factory)
