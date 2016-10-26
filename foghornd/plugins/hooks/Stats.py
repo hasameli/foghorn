@@ -14,7 +14,7 @@ more information
 
 class Stats(HooksBase):
     """Hooks for foghorn"""
-    last = {}
+    last = datetime.now()
     lists = {}
     timeout = 60  # How often to print messages
 
@@ -37,14 +37,11 @@ class Stats(HooksBase):
             self.lists[name] = self.TimedList()
             self.lists[name].append(1)
 
-        try:
-            self.last[name]
-        except KeyError:
-            self.last[name] = datetime.now() - timedelta(seconds=self.timeout)
-        finally:
-            if datetime.now() - timedelta(seconds=self.timeout) > self.last[name]:
-                self.foghorn.logging.info("{} rate: {} per minute".format(name,  len(self.lists[name])))
-                self.last[name] = datetime.now()
+        if datetime.now() - timedelta(seconds=self.timeout) > self.last:
+            for log in self.lists.keys():
+                self.lists[log]._clearold()
+                self.foghorn.logging.info("{} rate: {} per minute".format(log, len(self.lists[log])))
+            self.last = datetime.now()
 
     def query(self, peer, query):
         """Called for every query before processing"""
