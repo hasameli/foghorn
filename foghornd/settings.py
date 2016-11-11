@@ -192,3 +192,11 @@ class FoghornSettings(object):
     @resolver.setter
     def resolver(self, value):
         self.data["resolver"] = value
+
+    @property
+    def baseline(self):
+        return self.data.get("baseline", False)
+
+    @baseline.setter
+    def baseline(self, value):
+        self.data["baseline"] = value

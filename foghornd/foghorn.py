@@ -34,6 +34,7 @@ class Foghorn(object):
     def __init__(self, settings):
         self.settings = settings
         self.init_logging()
+        self.baseline = self.settings.baseline
         self.logging = logging.getLogger('foghornd')
         signal.signal(signal.SIGUSR1, self.toggle_baseline)
         signal.signal(signal.SIGHUP, self.reload)
