@@ -66,3 +66,7 @@ class HooksBase(object):
     def greylist_failed(self, peer, query, msg):
         """A query has failed the blacklist"""
         pass
+
+    def cache(self, query):
+        """A query has been responded to from the cache"""
+        pass

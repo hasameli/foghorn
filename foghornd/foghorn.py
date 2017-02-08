@@ -22,15 +22,19 @@ class Foghorn(object):
     baseline = False
     hook_types = ["init", "query", "failed_acl", "no_acl",
                   "passed", "upstream_error", "sinkhole", "refused",
-                  "whitelist", "blacklist", "greylist_passed", "greylist_failed"]
+                  "whitelist", "blacklist", "greylist_passed", "greylist_failed",
+                  "cache"]
     hooks = {}
     acl_map = {dns.A: "allow_a", dns.AAAA: "allow_aaaa",
-               dns.MX: "allow_mx", dns.SRV: "allow_srv"}
+               dns.MX: "allow_mx", dns.SRV: "allow_srv",
+               dns.PTR: "allow_ptr"}
+
     resolver = None
 
     def __init__(self, settings):
         self.settings = settings
         self.init_logging()
+        self.baseline = self.settings.baseline
         self.logging = logging.getLogger('foghornd')
         signal.signal(signal.SIGUSR1, self.toggle_baseline)
         signal.signal(signal.SIGHUP, self.reload)
@@ -164,7 +168,7 @@ class Foghorn(object):
         """
         key = query.name.name
         curtime = datetime.now()
-        if query.type in [dns.A, dns.AAAA, dns.MX, dns.SRV]:
+        if query.type in [dns.A, dns.AAAA, dns.MX, dns.SRV, dns.PTR]:
             if self.listhandler.check_whitelist(query):
                 self.run_hook("whitelist", self.peer_address, query)
                 return True
@@ -225,7 +229,6 @@ class Foghorn(object):
         # Disable the warning that timeout is unused. We have to
         # accept the argument.
         # pylint: disable=W0613
-        self.run_hook("query", self.peer_address, query)
         # ACL:
         try:
             if not self.ACL.check_acl(self.acl_map[query.type],

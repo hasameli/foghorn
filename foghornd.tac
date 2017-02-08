@@ -12,7 +12,7 @@ from twisted.names import dns, cache
 
 from twisted.web import server as webserver
 
-from foghornd import Foghorn, FoghornSettings
+from foghornd import Foghorn, FoghornSettings, Cache
 from foghornd.foghornrpc import FoghornXMLRPC
 from foghornd.foghorndnsserverfactory import FoghornDNSServerFactory
 
@@ -36,9 +36,10 @@ def foghord_service():
     # create a resource to serve static files
     foghorn = Main()
     servers = []
-
+    fcache = Cache.Cache()
+    fcache.foghorn = foghorn.foghorn
     factory = FoghornDNSServerFactory(
-        caches=[cache.CacheResolver()],
+        caches=[fcache],
         clients=[foghorn.foghorn]
     )
     factory.noisy = False
@@ -51,8 +52,12 @@ def foghord_service():
 
     if not addresses:
         for iface in netifaces.interfaces():
-            for addr in netifaces.ifaddresses(iface)[netifaces.AF_INET]:
-                addresses.append(addr["addr"])
+            try:
+                for addr in netifaces.ifaddresses(iface)[netifaces.AF_INET]:
+                    addresses.append(addr["addr"])
+            except KeyError:
+                # No address for this interface
+                pass
 
     for listen in addresses:
         udp_protocol = dns.DNSDatagramProtocol(controller=factory)
